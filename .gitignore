@@ -1,0 +1,29 @@
+# Arquivos e diretórios específicos de IDEs
+.vscode/
+.idea/
+*.pyc
+
+# Arquivos gerados pelo Python
+__pycache__/
+*.pyo
+*.pyd
+
+# Arquivos de ambiente virtual
+venv/
+env/
+
+# Arquivos de log
+*.log
+
+# Arquivos de cache
+*.cache/
+
+# Arquivos de build
+build/
+dist/
+*.egg-info/
+
+# Outros arquivos e diretórios
+*.bak
+*.swp
+.DS_Store
