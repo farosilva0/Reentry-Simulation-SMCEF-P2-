@@ -1,4 +1,6 @@
+from scipy.interpolate import CubicSpline
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 
 
@@ -8,6 +10,9 @@ dt = 0.01            # time steps (s)
 altitude_0 = 130_000   # Initial altitude (m)
 angle_0 = 0       # Entry angle (degrees)
 v_0 = 7_800         # Initial velocity (m/s)
+air_density_table = pd.read_csv('air_density.csv')      # Air density table
+altitude_values = air_density_table['altitude']       # Altitude values
+air_density_values = air_density_table['air_density']    # Air density values
 
 # Capsule parameters
 CAPSULE_MASS = 12_000    # Mass of the capsule (kg)
@@ -19,9 +24,11 @@ CAPSULE_LIFT_COEFFICIENT = 1.0  # lift coefficient
 G_M = 6.67430e-11 * 5.972e24    # G (Gravitational constant) * Earth mass, m^3 kg^-1 s^-2
 RADIUS_EARTH = 6.371e6          # Earth radius (m)
 
+def get_air_density_cubic_spline(altitude):
+    f = CubicSpline(altitude_values, air_density_values, bc_type='natural')
+    return f(altitude)
 
-
-def getAirDensity(y):
+def get_air_density(y):
     '''returns the air density at a given altitude'''
     # Model of the air density variation with altitude
     rho0 = 1.225  # air density at sea level (kg/m^3)
@@ -35,7 +42,7 @@ def drag_acceleration(vx, vy, v, y, A = CAPSULE_SURFACE_AREA, Cd = CAPSULE_DRAG_
     '''calculates the drag acceleration on the object, given its velocity and altitude.
         By default, the drag force is calculated for the capsule.
         Drag force always opposes the movement direction, so it is negative.'''
-    Fd = -0.5 * Cd * A * getAirDensity(y) * v**2  #
+    Fd = -0.5 * Cd * A * get_air_density(y) * v**2  #
     ax = Fd * vx / CAPSULE_MASS
     ay = Fd * vy / CAPSULE_MASS
     return ax, ay
@@ -45,7 +52,7 @@ def lift_acceleration(vx, vy, v, y, A = CAPSULE_SURFACE_AREA, Cl = CAPSULE_LIFT_
     '''calculates the lift acceleration on the object, given its velocity and altitude.
         By default, the lift force is calculated for the capsule.
         Lift force is perpendicular to the movement direction, so it is calculated using the velocity components.'''
-    Fl = 0.5 * Cl * A * getAirDensity(y) * v**2
+    Fl = 0.5 * Cl * A * get_air_density(y) * v**2
     ax = Fl * vy / (CAPSULE_MASS * v)   
     ay = -Fl * vx / (CAPSULE_MASS * v)  # Lift force oposes the fall (y component)
     return ax, ay
@@ -110,6 +117,18 @@ def run_entry_simulation(altitude_0, angle_0, v_0):
                
     return path_x, path_y
 
+
+def plot_air_density(f):
+    x = np.linspace(-1000, 500000, 1000000)
+    y = f(x)
+
+    plt.figure(figsize = (10,8))
+    plt.plot(x, y, 'b')
+    plt.plot(altitude_values, air_density_values, 'ro')
+    plt.title('Cubic Spline Interpolation')
+    plt.xlabel('altitude')
+    plt.ylabel('air_density')
+    plt.show()
 
 def plot_path(path_x, path_y):
     '''plot the path of the capsule'''
