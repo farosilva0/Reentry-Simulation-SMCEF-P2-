@@ -10,15 +10,17 @@ dt = 0.01            # time steps (s)
 altitude_0 = 130_000   # Initial altitude (m)
 angle_0 = 0       # Entry angle (degrees)
 v_0 = 7_800         # Initial velocity (m/s)
-air_density_table = pd.read_csv('air_density.csv')      # Air density table
-altitude_values = air_density_table['altitude']       # Altitude values
-air_density_values = air_density_table['air_density']    # Air density values
 
 # Capsule parameters
 CAPSULE_MASS = 12_000    # Mass of the capsule (kg)
 CAPSULE_SURFACE_AREA = 4 * np.pi  # surface considered for drag coefficient (m^2)
 CAPSULE_DRAG_COEFFICIENT = 1.2  # drag coefficient
 CAPSULE_LIFT_COEFFICIENT = 1.0  # lift coefficient
+
+# Density parameters
+DENSITY_CSV = pd.read_csv('air_density.csv')      # Air density table
+ALTITUDE = DENSITY_CSV['altitude']       # Altitude values
+AIR_DENSITY = DENSITY_CSV['air_density']    # Air density values
 
 # Parachute parameters
 PARACHUTE_SURFACE_AREA = 301 # surface considered for parachute's drag coefficient (m^2)
@@ -31,18 +33,10 @@ G_M = 6.67430e-11 * 5.972e24    # G (Gravitational constant) * Earth mass, m^3 k
 RADIUS_EARTH = 6.371e6          # Earth radius (m)
 
 def get_air_density_cubic_spline(altitude):
-    f = CubicSpline(altitude_values, air_density_values, bc_type='natural')
+    f = CubicSpline(ALTITUDE, AIR_DENSITY, bc_type='natural')
     result = f(altitude)
 
     return 0.0 if result < 0.0 else result
-
-def get_air_density(y):
-    '''returns the air density at a given altitude'''
-    # Model of the air density variation with altitude
-    rho0 = 1.225  # air density at sea level (kg/m^3)
-    h_scale = 8500.0  # scale height (m)
-    altitude = y - RADIUS_EARTH
-    return rho0 * np.exp(-altitude / h_scale)
 
 
 
@@ -147,7 +141,7 @@ def plot_air_density(f):
 
     plt.figure(figsize = (10,8))
     plt.plot(x, y, 'b')
-    plt.plot(altitude_values, air_density_values, 'ro')
+    plt.plot(ALTITUDE, AIR_DENSITY, 'ro')
     plt.title('Cubic Spline Interpolation')
     plt.xlabel('altitude')
     plt.ylabel('air_density')
