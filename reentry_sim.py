@@ -32,7 +32,8 @@ VELOCITY_BOUNDARY = 10**2  # boundary velocity for deployment of the parachutes 
 G_M = 6.67430e-11 * 5.972e24    # G (Gravitational constant) * Earth mass, m^3 kg^-1 s^-2
 RADIUS_EARTH = 6.371e6          # Earth radius (m)
 
-def get_air_density_cubic_spline(altitude):
+def get_air_density_cubic_spline(y):
+    altitude = y - RADIUS_EARTH
     f = CubicSpline(ALTITUDE, AIR_DENSITY, bc_type='natural')
     result = f(altitude)
 
@@ -73,7 +74,7 @@ def lift_acceleration(vx, vy, v, y, A = CAPSULE_SURFACE_AREA, Cl = CAPSULE_LIFT_
 def gravity_acceleration(x, y):
     '''calculates the acceleration due to gravity at a given position (x, y)
         returns the acceleration components gx and gy. '''
-    r = y + RADIUS_EARTH        # distance from the center of the Earth
+    r = np.sqrt(x**2 + y**2)    # distance from the center of the Earth
     g = - G_M / r**2            # gravity acceleration pointing to the center of the Earth (negative because it goes down)
     gx = g * (x / r)           
     gy = g * (y / r)
