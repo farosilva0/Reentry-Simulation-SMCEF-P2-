@@ -10,8 +10,8 @@ import plot_functions as plot
 dt = 0.01                                                         # time steps (s)
 g = -10.0                                                         # gravity acceleration (m/s^2)
 altitude_0 = 130_000                                              # Initial altitude (m)
-initial_angles = np.arange(start=8, stop=9.1, step=1)            # Possible entry angles (degrees)
-initial_velocities = np.arange(start=8_000, stop=9_100, step=1_000)  # Possible Initial velocities (m/s)
+initial_angles = np.arange(start=0, stop=15.1, step=1)            # Possible entry angles (degrees)
+initial_velocities = np.arange(start=0, stop=15_100, step=1_000)  # Possible Initial velocities (m/s)
 
 # Capsule parameters
 CAPSULE_MASS = 12_000               # Mass of the capsule (kg)
@@ -128,6 +128,7 @@ def run_entry_simulation(altitude_0, angle_0, v_0):
         ax, ay = total_acceleration(y, vx, vy)
 
         a = np.sqrt(ax**2 + ay**2)
+        # print(f"aceleração total: {a}")
         if(a > ACCELERATION_BOUNDARY):  # total acceleration was higher tham the limit for a successful reentry
             surpassed_boundary = True
 
@@ -155,25 +156,27 @@ def run_entry_simulation(altitude_0, angle_0, v_0):
 def main():
 
     successful_angles = []
-    successful_velocities = []
     time_start = time.time()
 
     for angle_0 in initial_angles:
+        successful_velocities = []
         for v_0 in initial_velocities:
             path_x, path_y, surpassed_boundary, v, horizontal_x = run_entry_simulation(altitude_0, angle_0, v_0)
             plot.plot_path(path_x, path_y)      # para debug, pois o tempo tomado para encerrar o separador do plot conta para o tempo total da execução
             # TODO: calcular distancia horizontal segundo o enunciado
-            if not surpassed_boundary and v < VELOCITY_FINAL_BOUNDARY and LOWER_HORIZONTAL_BOUNDARY <= horizontal_x <= HIGHER_HORIZONTAL_BOUNDARY:
-                successful_angles.append(angle_0)
+            if v < VELOCITY_FINAL_BOUNDARY and not surpassed_boundary and LOWER_HORIZONTAL_BOUNDARY <= horizontal_x <= HIGHER_HORIZONTAL_BOUNDARY:
                 successful_velocities.append(v_0)
+        successful_velocities = np.array(successful_velocities, dtype="int")
+        angle = np.full(successful_velocities.size, angle_0, dtype=float)
+        successful_angles.append((angle, successful_velocities))
                 
-    successful_angles = np.array(successful_angles)
-    successful_velocities = np.array(successful_velocities)
+    successful_angles = np.array(successful_angles, dtype=object)
+    print(successful_angles)
     time_end = time.time()
 
     print(f"Time to run the simulation: {time_end - time_start} seconds")
 
-    plot.plot_reentry_parameters(successful_angles, successful_velocities)
+    plot.plot_reentry_parameters(successful_angles)
 
 
 if __name__ == "__main__":

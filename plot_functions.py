@@ -27,11 +27,12 @@ def plot_air_density(f):
     plt.show()
 
 
-def plot_reentry_parameters(angles, velocities):
+def plot_reentry_parameters(angles):
     '''plot the parameter values that bound valid reentry solutions'''
 
     fig, ax = plt.subplots(figsize=(12, 8))
-    ax.plot(velocities, angles, label='Reentry Parameters')
+    for angle, velocities in angles:
+        ax.plot(velocities, angle,'-o', label=f'angle: {angle[0]}')
     ax.set_xlabel('initial velocity (m/s)')
     ax.set_ylabel('downward angle (º)')
     ax.legend()
