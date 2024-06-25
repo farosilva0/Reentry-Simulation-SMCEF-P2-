@@ -1,8 +1,8 @@
-from scipy.interpolate import CubicSpline
 import time
 import numpy as np
 import pandas as pd
 import plot_functions as plot
+from scipy.interpolate import CubicSpline
 
 
 
@@ -11,7 +11,6 @@ dt = 0.01                                                         # time steps (
 altitude_0 = 130_000                                              # Initial altitude (m)
 initial_angles = np.arange(start=0, stop=15.1, step=1)            # Possible entry angles (degrees)
 initial_velocities = np.arange(start=0, stop=15_100, step=1_000)  # Possible Initial velocities (m/s)
-# g = -10.0                                                         # gravity acceleration (m/s^2)
 
 # Capsule parameters
 CAPSULE_MASS = 12_000               # Mass of the capsule (kg)
@@ -52,10 +51,13 @@ def get_air_density_cubic_spline(y):
 
 def get_tot_acceleration(vx, vy, v, x, y, A, Cd, Cl):
     # Drag and lift 
-    Faero = 0.5 / CAPSULE_MASS * A * get_air_density_cubic_spline(y) * v 
-    ax = (-Faero*Cd - Faero*Cl)*vy 
-    ay = (-Faero*Cd - Faero*Cl)*vx  -G_M / y**2 # Gravity only for y
-        
+    F_air = 0.5 / CAPSULE_MASS * A * get_air_density_cubic_spline(y) * v # we do v**2 and then (vx/v) so can be simplified to v ??
+    ax = -F_air*Cd*vx + F_air*Cl*vy 
+    ay = -F_air*Cd*vy - F_air*Cl*vx  
+    
+    # Gravity 
+    ay += -G_M / y**2  # the given y already is the distance from the center of the Earth so we can use it directly??
+    
     return ax, ay
 
 
