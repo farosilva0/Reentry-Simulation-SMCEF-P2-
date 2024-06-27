@@ -1,4 +1,3 @@
-import time
 import numpy as np
 import pandas as pd
 import plot_functions as plot
@@ -49,37 +48,40 @@ def get_air_density_cubic_spline(y):
     return result if result > 0.0 else 0.0
 
 
-def get_tot_acceleration(vx, vy, v, x, y, A, Cd, Cl):
-    # Drag and lift 
-    F_air = 0.5 / CAPSULE_MASS * A * get_air_density_cubic_spline(y) * v # we do v**2 and then (vx/v) so can be simplified to v ??
-    ax = -F_air*Cd*vx + F_air*Cl*vy 
-    ay = -F_air*Cd*vy - F_air*Cl*vx  
-    
-    # Gravity 
-    ay += -G_M / y**2  # the given y already is the distance from the center of the Earth so we can use it directly??
-    
+def get_tot_acceleration(x, y, vx, vy):
+    '''calculates the total acceleration on the capsule, which depends if the parachutes are deployed or not.'''
+    v = np.sqrt(vx**2 + vy**2) # velocity in the movement's direction
+
+    air_density = get_air_density_cubic_spline(y)
+
+    # Drag acceleration
+    F_air = -0.5 * CAPSULE_DRAG_COEFFICIENT * CAPSULE_SURFACE_AREA * air_density * v # we do v**2 and then (vx/v) so can be simplified to v
+    ax = F_air * (vx / CAPSULE_MASS)
+    ay = F_air * (vy / CAPSULE_MASS)
+
+    if (y - RADIUS_EARTH) <= ALTITUDE_BOUNDARY and v <= VELOCITY_BOUNDARY:      # case where the parachutes are deployed and there is no lift resistance
+        F_air_parachute = -0.5 * PARACHUTE_DRAG_COEFFICIENT * PARACHUTE_SURFACE_AREA * air_density * v
+        ax += F_air_parachute * (vx / CAPSULE_MASS)
+        ay += F_air_parachute * (vy / CAPSULE_MASS)
+    else:                                                                       # case where the parachutes are not deployed
+        F_lift = -0.5 * CAPSULE_LIFT_COEFFICIENT * CAPSULE_SURFACE_AREA * air_density * v
+        ax += F_lift * (vx / CAPSULE_MASS)
+        ay += F_lift * (vy / CAPSULE_MASS)
+
+    # Gravity
+    r = np.sqrt(x**2 + y**2)    # distance from the center of the Earth
+    g = -G_M / r**2             # gravity acceleration pointing to the center of the Earth
+
+    ay += g
+
     return ax, ay
 
 
-def capsule_acceleration(x, y, vx, vy):
-    '''calculates the total acceleration on the capsule, which depends if the parachutes are deployed or not.'''
-    v = np.sqrt(vx**2 + vy**2) # velocity in the movement's direction
-    if (y - RADIUS_EARTH) > ALTITUDE_BOUNDARY and v > VELOCITY_BOUNDARY: # case where the parachutes are deployed and there is no lift resistance
-        return get_tot_acceleration(vx, vy, v, x, y, CAPSULE_SURFACE_AREA, CAPSULE_DRAG_COEFFICIENT, CAPSULE_LIFT_COEFFICIENT)
-        # print(f"drag_lift_acceleration x: {resistance_x}")
-        # print(f"drag_lift_acceleration y: {resistance_y}")
-    else: 
-        return get_tot_acceleration(vx, vy, v, x, y, PARACHUTE_SURFACE_AREA, PARACHUTE_DRAG_COEFFICIENT, 0) # no lift resistance
-        # print(f"drag_lift_acceleration_parachute x: {resistance_x}")
-        # print(f"drag_lift_acceleration_parachute y: {resistance_y}")
-
-
-
-def run_entry_simulation(altitude_0, angle_0, v_0):
+def run_entry_simulation(altitude_0, angle, v_0):
     '''runs a simulation of the capsule reentry'''
 
     # initial velocity
-    tetha = np.radians(-angle_0)
+    tetha = np.radians(-angle)
     vx_0 = v_0 * np.cos(tetha)
     vy_0 = v_0 * np.sin(tetha)
 
@@ -91,28 +93,27 @@ def run_entry_simulation(altitude_0, angle_0, v_0):
     
     path_x = [x]
     path_y = [y - RADIUS_EARTH]
+    time = 0
 
     surpassed_boundary = False
     
     while y > RADIUS_EARTH:
         ''' reentry simulation using Euler's method'''
-        # print("-------------------------------------------------------------------------------")
+
+        # update time
+        time += dt
+
         # total acceleration
-        ax, ay = capsule_acceleration(x, y, vx, vy)
+        ax, ay = get_tot_acceleration(x, y, vx, vy)
         a = np.sqrt(ax**2 + ay**2)
 
-        # print(f"aceleração total: {a}")
         if(a > ACCELERATION_BOUNDARY):  # total acceleration was higher tham the limit for a successful reentry
             surpassed_boundary = True
 
-        # velocity 
+        # velocity
         vx += ax * dt
         vy += ay * dt
 
-        # print(f"velocidade x: {vx}")      # prints para debug
-        # print(f"velocidade y: {vy}")
-        # print(f"velocidade: {np.sqrt(vx**2 + vy**2)}")
-        
         # positions
         x += vx * dt
         y += vy * dt
@@ -122,6 +123,9 @@ def run_entry_simulation(altitude_0, angle_0, v_0):
         path_y.append(y - RADIUS_EARTH)  # Altitude em relação ao nível do mar
     
     v_final = np.sqrt(vx**2 + vy**2)
+
+    print(f"Horizontal distance at the Earth surface: {RADIUS_EARTH * angle}")
+    print(f"Time to execute the simulation: {time} seconds")
                
     return path_x, path_y, surpassed_boundary, v_final, x
 
@@ -129,7 +133,6 @@ def run_entry_simulation(altitude_0, angle_0, v_0):
 def main():
 
     successful_angles = []
-    time_start = time.time()
 
     for angle_0 in initial_angles:
         successful_velocities = []
@@ -143,9 +146,6 @@ def main():
         successful_angles.append((angle, successful_velocities))
                 
     successful_angles = np.array(successful_angles, dtype=object)
-    time_end = time.time()
-
-    print(f"Time to run the simulation: {time_end - time_start} seconds")
 
     plot.plot_reentry_parameters(successful_angles)
 
