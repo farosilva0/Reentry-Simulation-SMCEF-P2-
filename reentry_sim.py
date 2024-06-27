@@ -8,8 +8,8 @@ from scipy.interpolate import CubicSpline
 # SIMULATION PARAMETERS
 dt = 0.01                                                         # time steps (s)
 altitude_0 = 130_000                                              # Initial altitude (m)
-initial_angles = np.arange(start=0, stop=15.1, step=1)            # Possible entry angles (degrees)
-initial_velocities = np.arange(start=0, stop=15_100, step=1_000)  # Possible Initial velocities (m/s)
+initial_angles = np.arange(start=0, stop=4.1, step=1)            # Possible entry angles (degrees)
+initial_velocities = np.arange(start=0, stop=4_100, step=1_000)  # Possible Initial velocities (m/s)
 
 # Capsule parameters
 CAPSULE_MASS = 12_000               # Mass of the capsule (kg)
@@ -114,9 +114,15 @@ def run_entry_simulation(altitude_0, angle, v_0):
         vx += ax * dt
         vy += ay * dt
 
+        # previous x positions
+        previous_x = x
+
         # positions
         x += vx * dt
         y += vy * dt
+
+        # angle
+        angle += (x - previous_x)/y
         
         # store positions
         path_x.append(x)
