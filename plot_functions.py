@@ -42,113 +42,60 @@ def plot_reentry_parameters(pairs):
 
 
 
-def plot_sims_metrics(tot_sims_metrics):
+
+
+def plot_metric(ax, x, x_label, y, y_label, init_values_lable, invert_x_values = False, invert_y_values = False):
+    '''plot a metric'''
+    ax.plot(x, y, label=init_values_lable) 
+    ax.legend(fontsize=7) 
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    if invert_x_values:
+        ax.invert_xaxis()
+    if invert_y_values:
+        ax.invert_yaxis()
+    ax.grid()
+
+
+def plot_sims_metrics(tot_sims_metrics, reentry_sim):
     '''plot path, and if SHOW_DETAILS is True, plot also acceleration and velocity. '''   
+    dist_label = f'Distance (m)'
+    alt_label = f'Altitude (m)'      
+    vel_label = f'Velocity (m/s)'
+    acc_label = f'Acceleration (m/s^2)'
+    time_label = f'Time (s)'
+
+
     if SHOW_DETAILS:
         fig, axs = plt.subplots(2, 3, figsize=(12, 10))
-        for sim in tot_sims_metrics:
-            times = sim[TIMES]
-            x_km = np.array(sim[PATH_X]) / 1000.0  # Convert distances to kilometers
-            y_km = np.array(sim[PATH_Y]) / 1000.0  # Convert altitudes to kilometers
-                
-            # Path (x * y)
-            label = f'angle: {sim[INIT_ANGLE]:.1f}, velocity: {sim[INIT_VELOCITY]:.1f}'
-            ax = axs[0,0]
-            if RUN_OTHER_SIM:
-                ax.plot(sim[PATH_X], sim[PATH_Y], label=label)
-                ax.set_xlabel('x distance (m)')
-                ax.set_ylabel('y altitude (m)')
-            else:
-                ax.plot(x_km, y_km, label=label)
-                ax.set_xlabel('x distance (km)')
-                ax.set_ylabel('y altitude (km)')
-            ax.legend()
-            ax.grid()
+        for sim in tot_sims_metrics: 
 
-            # Velocity vs Altitude
-            ax = axs[0, 1]
-            ax.plot(y_km, sim[VELOCITIES])
-            ax.set_xlabel('Altitude (km)')
-            ax.set_ylabel('Velocity (m/s)')
-            ax.set_xlim(max(y_km), min(y_km)) # Invert x-axis to see from left to right
-            ax.grid()
+            init_values_lable = f'ang:{sim[INIT_ANGLE]:.0f}, vel:{sim[INIT_VELOCITY]:.0f}'
+            
+            # Path (x=distance, y=altitude) 
+            path_label = f', max_x:{max(sim[PATH_X]):.0f}, max_y:{max(sim[PATH_Y]):.0f}'
+            plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + path_label) 
 
-            # Velocity vs Time
-            ax = axs[1, 1]
-            ax.plot(times, sim[VELOCITIES])
-            ax.set_xlabel('Time (s)')
-            ax.set_ylabel('Velocity (m/s)')
-            ax.grid()
+            # x=Altitude vs y=Velocity
+            vel_label = f', max_v:{max(sim[VELOCITIES]):.0f}, min_v:{min(sim[VELOCITIES]):.0f}'
+            plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[VELOCITIES], vel_label, init_values_lable + vel_label, invert_x_values = reentry_sim, invert_y_values = True)
+                        
+            # x=Time vs y=Velocity
+            plot_metric(axs[1,1], sim[TIMES], time_label, sim[VELOCITIES], vel_label, init_values_lable + vel_label, invert_x_values = False, invert_y_values = True)
 
-            # Acceleration vs Altitude
-            ax = axs[0,2]
-            ax.plot(y_km, sim[ACCELERATIONS])
-            ax.set_xlabel('Altitude (km)')
-            ax.set_ylabel('Acceleration (m/s^2)')
-            ax.set_xlim(max(y_km), min(y_km)) # Invert x-axis to see from left to right
-            ax.grid()
+            # x=Altitude vs y=Acceleration
+            acc_label = f', max_a:{max(sim[ACCELERATIONS]):.0f}, min_a:{min(sim[ACCELERATIONS]):.0f}'
+            plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_label, invert_x_values = reentry_sim, invert_y_values = True)
 
-            # Acceleration vs Time
-            ax = axs[1,2]
-            ax.plot(times, sim[ACCELERATIONS])
-            ax.set_xlabel('Time (s)')
-            ax.set_ylabel('Acceleration (m/s^2)')
-            ax.grid()
-
-
+            # x=Time vs y=Acceleration
+            plot_metric(axs[1,2], sim[TIMES], time_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_label, invert_x_values = False, invert_y_values = True)
+            
         plt.tight_layout()
         plt.show()
 
     else: # NOT SHOW_DETAILS - only plot the path
-        fig, ax = plt.subplots(figsize=(12, 8))
-        for sim in tot_sims_metrics:
-            path_x = sim[PATH_X]
-            path_y = sim[PATH_Y]
-            label = f'angle: {sim[INIT_ANGLE]:.1f}, velocity: {sim[INIT_VELOCITY]:.1f}'
-            ax.plot(path_x, path_y, label=label)
-        ax.set_xlabel('x distance (m)')
-        ax.set_ylabel('y altitude (m)')
-        ax.legend()
-        plt.show()
+        # Path (x=distance, y=altitude) 
+        init_values_lable = f'angle: {sim[INIT_ANGLE]:.1f}, velocity: {sim[INIT_VELOCITY]:.1f}'
+        plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable) 
 
 
-
-
-    # # Acceleration vs Time
-    # plt.figure()
-    # plt.plot(times, accelerations)
-    # plt.xlabel('Time (s)')
-    # plt.ylabel('Acceleration (m/s^2)')
-    # plt.title('Acceleration vs Time')
-    # plt.grid()
-    # plt.show()
-
-def plot_aceleration_vs_altitude(accelerations, altitudes):
-    # Acceleration vs Altitude
-    plt.figure()
-    plt.plot(altitudes, accelerations)
-    plt.xlabel('Altitude (m)')
-    plt.ylabel('Acceleration (m/s^2)')
-    plt.title('Acceleration vs Altitude')
-    plt.grid()
-    plt.show()
-
-def plot_velocity_vs_time(velocities, times):
-    # Velocity vs Time
-    plt.figure()
-    plt.plot(times, velocities)
-    plt.xlabel('Time (s)')
-    plt.ylabel('Velocity (m/s)')
-    plt.title('Velocity vs Time')
-    plt.grid()
-    plt.show()
-
-def plot_velocity_vs_altitude(velocities, altitudes):
-    # Velocity vs Altitude
-    plt.figure()
-    plt.plot(altitudes, velocities)
-    plt.xlabel('Altitude (m)')
-    plt.ylabel('Velocity (m/s)')
-    plt.title('Velocity vs Altitude')
-    plt.grid()
-    plt.show()
