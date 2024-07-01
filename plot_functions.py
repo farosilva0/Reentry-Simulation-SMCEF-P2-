@@ -73,22 +73,22 @@ def plot_sims_metrics(tot_sims_metrics, reentry_sim):
             init_values_lable = f'ang:{sim[INIT_ANGLE]:.0f}, vel:{sim[INIT_VELOCITY]:.0f}'
             
             # Path (x=distance, y=altitude) 
-            path_label = f', max_x:{max(sim[PATH_X]):.0f}, max_y:{max(sim[PATH_Y]):.0f}'
-            plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + path_label) 
+            path_comp_label = f', max_x:{max(sim[PATH_X]):.0f}, max_y:{max(sim[PATH_Y]):.0f}'
+            plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + path_comp_label) 
 
             # x=Altitude vs y=Velocity
-            vel_label = f', max_v:{max(sim[VELOCITIES]):.0f}, min_v:{min(sim[VELOCITIES]):.0f}'
-            plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[VELOCITIES], vel_label, init_values_lable + vel_label, invert_x_values = reentry_sim, invert_y_values = True)
+            vel_comp_label = f', max_v:{max(sim[VELOCITIES]):.0f}, min_v:{min(sim[VELOCITIES]):.0f}'
+            plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label, invert_x_values = reentry_sim, invert_y_values = True)
                         
             # x=Time vs y=Velocity
-            plot_metric(axs[1,1], sim[TIMES], time_label, sim[VELOCITIES], vel_label, init_values_lable + vel_label, invert_x_values = False, invert_y_values = True)
+            plot_metric(axs[1,1], sim[TIMES], time_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label, invert_x_values = False, invert_y_values = True)
 
             # x=Altitude vs y=Acceleration
-            acc_label = f', max_a:{max(sim[ACCELERATIONS]):.0f}, min_a:{min(sim[ACCELERATIONS]):.0f}'
-            plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_label, invert_x_values = reentry_sim, invert_y_values = True)
+            acc_comp_label = f', max_a:{max(sim[ACCELERATIONS]):.0f}, min_a:{min(sim[ACCELERATIONS]):.0f}'
+            plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, invert_x_values = reentry_sim, invert_y_values = True)
 
             # x=Time vs y=Acceleration
-            plot_metric(axs[1,2], sim[TIMES], time_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_label, invert_x_values = False, invert_y_values = True)
+            plot_metric(axs[1,2], sim[TIMES], time_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, invert_x_values = False, invert_y_values = True)
             
         plt.tight_layout()
         plt.show()

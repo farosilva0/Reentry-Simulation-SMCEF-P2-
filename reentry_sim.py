@@ -27,7 +27,7 @@ VERTICAL_SIM = 3                # we'll start the simulation without velocity, s
 # 3. Choose more options:
 ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
 
-DRAG_COEFFICIENT = 0.3      # drag coefficient to use in the simulation
+DRAG_COEFFICIENT = 0      # drag coefficient to use in the simulation
 LIFT_COEFFICIENT = 0        # lift coefficient to use in the simulation
 
 CONSTANT_GRAVITY = True            # if True we'll use constant values for gravity
