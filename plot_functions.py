@@ -34,7 +34,7 @@ def plot_reentry_parameters(pairs):
         return
     fig, ax = plt.subplots(figsize=(12, 8))
     for angle, velocity in pairs:
-        ax.plot(velocity, -angle,'-o', label=f'angle: {angle[0]}')
+        ax.plot(velocity, -angle,'-o', label=f'angle: {angle}')
     ax.set_xlabel('initial velocity (m/s)')
     ax.set_ylabel('downward angle (º)')
     ax.legend()

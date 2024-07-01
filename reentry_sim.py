@@ -63,8 +63,8 @@ dt = 0.01                       # time steps (s)
 
 X_0 = 0                                                          # Initial x position (m)
 ALTITUDE_0 = 130_000                                                # "interface" == Initial altitude (m)
-INIT_VELOCITIES = np.arange(start=0, stop=15_000, step=1_000)    # Possible Initial velocities (m/s)
-INIT_ANGLES = np.negative (np.arange(start=0, stop=15, step=1))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+INIT_VELOCITIES = np.arange(start=0, stop=15_001, step=1_000)    # Possible Initial velocities (m/s)
+INIT_ANGLES = np.negative (np.arange(start=0, stop=15.1, step=1))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
 if SIM_TYPE == HORIZONTAL_SIM:
     INIT_VELOCITIES = [10]  
     INIT_ANGLES = [0]        # so, with now forces, and some initial velocity with initial angle 0 -> the altitude will remain the same even in round earth 
@@ -232,7 +232,7 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
         ax, ay = (0, 0) if SIM_TYPE == HORIZONTAL_SIM else get_tot_acceleration(x, y, vx, vy)
 
         a = np.sqrt(ax**2 + ay**2)
-        if(a > MAX_ACCELERATION):  
+        if(a > MAX_ACCELERATION):
             # print("Max acceleration surpassed. But continuing simulation for angle: ", angle_0, "   init velocity: ", v_0)
             # print(" -> x: ", x, " y: ", y, " vx: ", vx, " vy: ", vy, " ax: ", ax, " ay: ", ay)
             passed_max_g_limit = True
@@ -279,6 +279,7 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
     }
 
     final_velocity = np.sqrt(vx**2 + vy**2)
+    sum_earth_angle *= RADIUS_EARTH
 
     if SHOW_DETAILS:
         print("x:   min: ", min(path_x), "     max: ", max(path_x), "   diff: ", max(path_x) - min(path_x))
@@ -287,6 +288,7 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
         print("final velocity: ", final_velocity)
         print("accelerations:   min: ", min(accelerations), "     max: ", max(accelerations))
         print("times:   min: ", min(times), "     max: ", max(times))
+        print("horizontal distânce: ", sum_earth_angle)
     
     landed_before_min_horizontal_distance = path_x[-1] < MIN_HORIZONTAL_DISTANCE
     passed_max_landing_velocity = final_velocity > MAX_LANDING_VELOCITY
@@ -298,23 +300,17 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
 
 
 def main():
-    successful_pairs = []
+
+    successful_pairs = []   
+    tot_sims_metrics = []
 
     for angle_0 in INIT_ANGLES:
-        angle_velocities = []
-        tot_sims_metrics = []
         for v_0 in INIT_VELOCITIES:
             sim_metrics, successfull_landing = run_entry_simulation(angle_0, v_0)
             if successfull_landing:
-                angle_velocities.append(v_0)
+                successful_pairs.append((angle_0, v_0))
             if SHOW_DETAILS:
                 tot_sims_metrics.append(sim_metrics)
-        angle = np.full(len(angle_velocities), angle_0, dtype=float)
-        if(len(angle_velocities) != 0):
-            successful_pairs.append((angle, angle_velocities))
-        # if SHOW_DETAILS:
-        #     plot.plot_sims_metrics(tot_sims_metrics, reentry_sim = (SIM_TO_RUN == REENTRY_SIM))
-
     plot.plot_reentry_parameters(successful_pairs)
 
 
