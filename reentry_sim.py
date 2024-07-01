@@ -100,7 +100,7 @@ if SIM_TO_RUN == PROJECTILE_SIM:
     print("\n" * 20 ,"Projectile simulation")
     ALTITUDE_0 = 0
     X_0 = 0                          
-    INIT_VELOCITIES = [500] 
+    INIT_VELOCITIES = [100] 
     INIT_ANGLES = [10, 30, 45, 60, 90] 
     CAPSULE_MASS = 10                      # we use same names for the variables for code simplicity
     CAPSULE_SURFACE_AREA = 2     
@@ -180,7 +180,6 @@ def get_tot_acceleration(x, y, vx, vy):
 
     # Gravity
     g = CONSTANT_G if CONSTANT_GRAVITY else G_M / (x**2 + y**2) # G_M / r**2 # simplified from: (np.sqrt(x**2 + y**2)**2)
-        # TODO: podemos simplificar e tirar sqrt e **2 ??
     ay -= g
     return ax, ay
 

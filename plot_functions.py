@@ -71,22 +71,22 @@ def plot_sims_metrics(tot_sims_metrics, reentry_sim):
         fig, axs = plt.subplots(2, 3, figsize=(12, 10))
         for sim in tot_sims_metrics: 
 
-            init_values_lable = f'ang:{sim[INIT_ANGLE]:.0f}, vel:{sim[INIT_VELOCITY]:.0f}'
+            init_values_lable = f'ang {sim[INIT_ANGLE]:.0f}, vel {sim[INIT_VELOCITY]:.0f},   '
             
             # Path (x=distance, y=altitude) 
-            x_comp_label = f', x:{min(sim[PATH_X]):.0f}-{max(sim[PATH_X]):.0f}'
-            y_comp_label = ""  if reentry_sim else  f', y:{min(sim[PATH_Y]):.0f}-{max(sim[PATH_Y]):.0f}'
+            x_comp_label = f'x({min(sim[PATH_X]):.0f} / {max(sim[PATH_X]):.0f})'
+            y_comp_label = ""  if reentry_sim else  f', y({min(sim[PATH_Y]):.0f} / {max(sim[PATH_Y]):.0f})'
             plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + x_comp_label + y_comp_label) 
 
             # x=Altitude vs y=Velocity
-            vel_comp_label = f', max_v:{max(sim[VELOCITIES]):.0f}, min_v:{min(sim[VELOCITIES]):.0f}'
+            vel_comp_label = f'vel({min(sim[VELOCITIES]):.0f} / {max(sim[VELOCITIES]):.0f})'
             plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label, invert_x_values = reentry_sim, invert_y_values = not reentry_sim)
                         
             # x=Time vs y=Velocity
             plot_metric(axs[1,1], sim[TIMES], time_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label, invert_x_values = False, invert_y_values = not reentry_sim)
 
             # x=Altitude vs y=Acceleration
-            acc_comp_label = f', max_a:{max(sim[ACCELERATIONS]):.0f}, min_a:{min(sim[ACCELERATIONS]):.0f}'
+            acc_comp_label = f'acc({min(sim[ACCELERATIONS]):.0f} / {max(sim[ACCELERATIONS]):.0f})'
             plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, invert_x_values = reentry_sim, invert_y_values = True)
 
             # x=Time vs y=Acceleration
