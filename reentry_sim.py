@@ -25,13 +25,13 @@ VERTICAL_SIM = 3                # we'll start the simulation without velocity, s
 
 
 # 3. Choose more options:
-ROUND_EARTH = True                  # if True we'll simulate the reentry in a round Earth
+ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
 
 DRAG_COEFFICIENT = 0      # drag coefficient to use in the simulation
 LIFT_COEFFICIENT = 0        # lift coefficient to use in the simulation
 
 CONSTANT_GRAVITY = False            # if True we'll use constant values for gravity
-CONSTANT_AIR_DENSITY = True        # if True we'll use constant values for air density
+CONSTANT_AIR_DENSITY = False        # if True we'll use constant values for air density
 
 SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
@@ -207,15 +207,11 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
     angle_0_rad = np.radians(angle_0)
     vx = v_0 * np.cos(angle_0_rad)
     vy = v_0 * np.sin(angle_0_rad)
-    if ROUND_EARTH:
-        vx, vy = make_round_earth(vx, vy, vx, vy, earth_angle)
-        if SHOW_DETAILS:
-            print("Changing Velocity to Round Earth")
     if SHOW_DETAILS:
         print( "Starting loops with: x: ", x, "   y: ", y, " (R = ", RADIUS_EARTH,")   vx: ", vx, "   vy: ", vy)
     
     while y >= RADIUS_EARTH:  # more stop conditions are inside the loop so we can store those circumstances
-        if (SIM_TYPE == HORIZONTAL_SIM and x > 10_000) or (SIM_TYPE == VERTICAL_SIM and y > RADIUS_EARTH + 10_000): # we'll stop the simulation after a while 
+        if (SIM_TYPE == HORIZONTAL_SIM and x > 10_000): # we'll stop the simulation after a while 
             break
 
         if x > MAX_HORIZONTAL_DISTANCE:
