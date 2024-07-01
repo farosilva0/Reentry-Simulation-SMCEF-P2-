@@ -102,8 +102,8 @@ if SIM_TO_RUN == PROJECTILE_SIM:
     X_0 = 0                          
     INIT_VELOCITIES = [500] 
     INIT_ANGLES = [10, 30, 45, 60, 90] 
-    CAPSULE_MASS = 1                      # we use same names for the variables for code simplicity
-    CAPSULE_SURFACE_AREA = 0.5
+    CAPSULE_MASS = 10                      # we use same names for the variables for code simplicity
+    CAPSULE_SURFACE_AREA = 2     
     CAPSULE_DRAG_COEFFICIENT = DRAG_COEFFICIENT
     CAPSULE_LIFT_COEFFICIENT = LIFT_COEFFICIENT
     if SIM_TYPE == HORIZONTAL_SIM:
@@ -155,20 +155,22 @@ def make_round_earth (x, y, x_step, y_step, earth_angle):
 
 def get_tot_acceleration(x, y, vx, vy):
     '''calculates the total acceleration on the capsule, which depends if the parachutes are deployed or not.'''
-    
+    print("x: ", x, " y: ", y, " vx: ", vx, " vy: ", vy)
     # Common air components for drag and lift
     v_abs = np.sqrt(vx**2 + vy**2)
     air_density =  1.225 if CONSTANT_AIR_DENSITY else f(y - RADIUS_EARTH)
-    F_air = 0.5 * CAPSULE_SURFACE_AREA * air_density * v_abs**2 / CAPSULE_MASS # TODO:we do v**2 and then (vx/v) so can be simplified to v;  
-   
+    F_air = 0.5 * CAPSULE_SURFACE_AREA * air_density * v_abs / CAPSULE_MASS # TODO:we do v**2 and then (vx/v) so can be simplified to v;  
+    print("1. F_air: ", F_air, " v_abs: ", v_abs, " air_density: ", air_density)
     # Drag and Lift: 
-    ax = - F_air * CAPSULE_DRAG_COEFFICIENT * vx # "-" because it's a resistance force on opposite direction of the velocity
+    ax = - F_air * CAPSULE_DRAG_COEFFICIENT * vx # "-" because it's a resistance force on opposite direction of the velocity (in case of object falling down velocity is also negative, so in that case the force will be positive, slowing the falling)
     ay = - F_air * CAPSULE_DRAG_COEFFICIENT * vy 
-    if SIM_WITH_PARACHUTE and v_abs <= PARACHUTE_MAX_OPEN_VELOCITY and (y - RADIUS_EARTH) <= PARACHUTE_MAX_OPEN_ALTITUDE:
-        # if we open the parachutes, we'll add its drag force in the opposite direction of the velocity
-        F_drag_parachute = 0.5 * PARACHUTE_DRAG_COEFFICIENT * PARACHUTE_SURFACE_AREA * air_density * v_abs**2 / CAPSULE_MASS
-        ax -= F_drag_parachute * (vx /v_abs) # TODO:we do v**2 and then (vx/v) so can be simplified to v;
-        ay -= F_drag_parachute * (vy /v_abs)
+    print("2. ax: ", ax, " ay: ", ay)
+    # exit()
+    # if SIM_WITH_PARACHUTE and v_abs <= PARACHUTE_MAX_OPEN_VELOCITY and (y - RADIUS_EARTH) <= PARACHUTE_MAX_OPEN_ALTITUDE:
+    #     # if we open the parachutes, we'll add its drag force in the opposite direction of the velocity
+    #     F_drag_parachute = 0.5 * PARACHUTE_DRAG_COEFFICIENT * PARACHUTE_SURFACE_AREA * air_density * v_abs**2 / CAPSULE_MASS
+    #     ax -= F_drag_parachute * (vx /v_abs) # TODO:we do v**2 and then (vx/v) so can be simplified to v;
+    #     ay -= F_drag_parachute * (vy /v_abs)
     # TODO: implementar lift perpendicular ao vetor velocidade
     # else:
         # lift_force = F_air * CAPSULE_LIFT_COEFFICIENT # * v_abs**2 ??
