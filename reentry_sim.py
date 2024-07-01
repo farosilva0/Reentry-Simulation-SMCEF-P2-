@@ -25,12 +25,12 @@ VERTICAL_SIM = 3                # we'll start the simulation without velocity, s
 
 
 # 3. Choose more options:
-ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
+ROUND_EARTH = True                  # if True we'll simulate the reentry in a round Earth
 
 DRAG_COEFFICIENT = 0      # drag coefficient to use in the simulation
 LIFT_COEFFICIENT = 0        # lift coefficient to use in the simulation
 
-CONSTANT_GRAVITY = True            # if True we'll use constant values for gravity
+CONSTANT_GRAVITY = False            # if True we'll use constant values for gravity
 CONSTANT_AIR_DENSITY = True        # if True we'll use constant values for air density
 
 SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
@@ -108,11 +108,9 @@ if SIM_TO_RUN == PROJECTILE_SIM:
     CAPSULE_LIFT_COEFFICIENT = LIFT_COEFFICIENT
     if SIM_TYPE == HORIZONTAL_SIM:
         ALTITUDE_0 = 1_000
-        INIT_VELOCITIES = [10]
         INIT_ANGLES = [0]        # so, with now forces, and some initial velocity with initial angle 0 -> the altitude will remain the same even in round earth 
     if SIM_TYPE == VERTICAL_SIM:
         INIT_ANGLES = [90]        # so, with now forces, and some initial velocity with initial angle 90 -> the altitude will remain the same even in round earth 
-        INIT_VELOCITIES = [100]
         X_0 = 1_000
 else:
     print("\n" * 20 ,"Capsule reentry simulation")
