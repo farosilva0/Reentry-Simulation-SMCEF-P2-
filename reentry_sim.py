@@ -38,7 +38,7 @@ CONSTANT_AIR_DENSITY = False        # if True we'll use constant values for air 
 
 SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
-SHOW_DETAILS = True
+SHOW_DETAILS = False
 # TODO: correr com SHOW_DETAILS = False e ver se os resultados são os mesmos, e se não são, ver o que está a ser mostrado que não devia ser mostrado
 
 dt = 0.5                        # time steps (s)
@@ -215,7 +215,6 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
     x = x_0                         
     y = RADIUS_EARTH + altitude_0  
     earth_angle = np.arctan(x / y)
-    # TODO: implementar maneira de apresentar esta métrica que acaba por ser também a distância horizontal
     sum_earth_angle = 0
     
     # initial velocity on flat earth
@@ -297,19 +296,23 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
         print("accelerations:   min: ", min(accelerations), "     max: ", max(accelerations), "  final: ", accelerations[-1])
         print("times:   min: ", min(times), "     max: ", max(times))
     
-    landed_before_min_horizontal_distance = path_x[-1] < MIN_HORIZONTAL_DISTANCE
-    landed_after_max_horizontal_distance = path_x[-1] > MAX_HORIZONTAL_DISTANCE
-    passed_max_landing_velocity = v > MAX_LANDING_VELOCITY
+    landed_after_min_horizontal_distance = x >= MIN_HORIZONTAL_DISTANCE
+    landed_before_max_horizontal_distance = x <= MAX_HORIZONTAL_DISTANCE
+    landed_below_max_landing_velocity = v <= MAX_LANDING_VELOCITY
 
-    successfull_landing = not passed_max_g_limit and not passed_max_landing_velocity and not landed_before_min_horizontal_distance and not landed_after_max_horizontal_distance
+    successfull_landing = not passed_max_g_limit and landed_below_max_landing_velocity and landed_after_min_horizontal_distance and landed_before_max_horizontal_distance
 
-    return sim_results, successfull_landing
+    # return sim_results, successfull_landing
+    return sim_results, successfull_landing, not passed_max_g_limit, landed_below_max_landing_velocity, landed_after_min_horizontal_distance and landed_before_max_horizontal_distance, 
 
 
 
 def main():
 
-    successful_pairs = []   
+    successful_pairs = []
+    acceleration_pairs = []
+    velocity_pairs = []
+    distance_pairs = []
 
     if SHOW_DETAILS:
         axs = plot.start_sims_metrics_plot(SIM_TO_RUN == REENTRY_SIM, SIM_TO_SHOW_IN_PLOT_METRICS)
@@ -317,15 +320,22 @@ def main():
     sim_to_show = 0
     for angle_0 in INIT_ANGLES:
         for v_0 in INIT_VELOCITIES:
-            sim_metrics, successfull_landing = run_entry_simulation(angle_0, v_0)
+            sim_metrics, successfull_landing, g_limit, velocity_limit, horizontal_landing_limit = run_entry_simulation(angle_0, v_0)
             if successfull_landing:
                 successful_pairs.append((angle_0, v_0))
+            if g_limit:
+                acceleration_pairs.append((angle_0, v_0))
+            if velocity_limit:
+                velocity_pairs.append((angle_0, v_0))
+            if horizontal_landing_limit:
+                distance_pairs.append((angle_0, v_0))
             if SHOW_DETAILS:
                 sim_to_show += 1
                 if sim_to_show in random_sim_to_show:
                     plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)
     if SHOW_DETAILS:
         plot.end_sims_metrics_plot()
+    plot.plot_reentry_conditions(acceleration_pairs, velocity_pairs, distance_pairs)
     plot.plot_reentry_parameters(successful_pairs)
 
 
