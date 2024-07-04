@@ -11,7 +11,7 @@ from reentry_sim import *
 
 def solve_ivp_reentry_simulation(t, array):
     x, vx, y, vy = array
-    ax, ay = get_tot_acceleration(x, y, vx, vy)
+    ax, ay = get_air_acceleration(x, y, vx, vy)
     return [vx, 
             -np.sqrt(vx**2 + vy**2)*vx - ax * dt, 
             vy, 

@@ -9,8 +9,8 @@ x_step = 10  # ex vel inicial ...
 ground_x = []
 altitude = []
 
-# initial point at 45 degrees y == x
-x = 500_000
+
+x = 0
 y = R + 100_000
 
 x_ground = 0

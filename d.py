@@ -1,13 +1,14 @@
 import numpy as np
-
+print("\n"*20)
 # encontrar angulo dados 2 vetores:
 
-vx = [100, 100,   1, -100]
-vy = [100,   1, 100,  100]
+y = [100,   100,  100,    100,     10,     0]
+x = [-10,   0,    10,     100,   100,    100]
 
-for i in range(len(vx)):
-    print(f'\nvx: {vx[i]}, vy: {vy[i]}')
-    v_angle = np.arctan2(vy[i], vx[i])
+for i in range(len(x)):
+    print(f'\nvx: {x[i]}, vy: {y[i]}')
+    v_angle = np.radians(90) - np.arctan2(y[i], x[i])
+
     print("v_angle: ",np.degrees(v_angle))
     # encontrar angulo do lift, perpendicular à velocidade e sempre a apontar para cima: 
     l_angle = v_angle + np.pi/2

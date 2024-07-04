@@ -15,17 +15,19 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 
 
 # 2. Choose type of simulation from options below:
-SIM_TYPE = 1
+SIM_TYPE = 4
 #------------------------
 NORMAL_SIM = 1
 HORIZONTAL_SIM = 2              # we'll start the simulation with some velocity and angle 0, and no forces, so the altitude will remain the same even in round earth
 VERTICAL_SIM = 3                # we'll start the simulation without velocity, so with forces object will move vertically
                                 # For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
+ORBITAL_VEL_SIM = 4             # we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
+ESCAPE_VEL_SIM = 5              # we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
 #------------------------
 
 
 # 3. Choose more options:
-ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
+ROUND_EARTH = True                  # if True we'll simulate the reentry in a round Earth
 
 DRAG_COEFFICIENT = 1.2      # drag coefficient to use in the simulation
 LIFT_COEFFICIENT = 1        # lift coefficient to use in the simulation
@@ -36,15 +38,15 @@ LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added
 CONSTANT_GRAVITY = False            # if True we'll use constant values for gravity
 CONSTANT_AIR_DENSITY = False        # if True we'll use constant values for air density
 
-SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
+SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
-SHOW_DETAILS = False
+SHOW_DETAILS = True
 # TODO: correr com SHOW_DETAILS = False e ver se os resultados são os mesmos, e se não são, ver o que está a ser mostrado que não devia ser mostrado
 
-dt = 0.5                        # time steps (s)
-SIM_MAX_TIME = 5_000            # max time for the simulation (s)
+dt = 0.00001                        # time steps (s)
+SIM_MAX_TIME = 500            # max time for the simulation (s)
 
-SIM_TO_SHOW_IN_PLOT_METRICS = 10 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
+SIMS_TO_SHOW_IN_PLOT_METRICS = 10 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
 
 '''RUN THIS SCRIPT TO SIMULATE THE CHOOSEN OPTIONS AND YOU DON'T NEED TO CHANGE ANYTHING ELSE BELLOW'''
 
@@ -66,17 +68,28 @@ RADIUS_EARTH = 6.371e6          # Earth radius (m)
 ''' Reentry Simulation Parameters - to try different initial angles and velocities and find the best combinations '''
 
 X_0 = 0                                                          # Initial x position (m)
-ALTITUDE_0 = 130_000                                                # "interface" == Initial altitude (m)
+ALTITUDE_0 = 130_000                                               # "interface" == Initial altitude (m)
 # TODO: meter todas as velocidades e angulos
-INIT_VELOCITIES = np.arange(start=0, stop=15_001, step=2_000)    # Possible Initial velocities (m/s)
-INIT_ANGLES = np.negative (np.arange(start=0, stop=15.1, step=2))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+INIT_ANGLES = [-1]#np.negative (np.arange(start=0, stop=15.1, step=2))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+INIT_VELOCITIES = [500, 1_000, 2_000, 3_000] #np.arange(start=0, stop=15_001, step=2_000)    # Possible Initial velocities (m/s)
+print("Orbital velocity (just for reference), at altitude ", ALTITUDE_0, " :", np.sqrt(G_M / (RADIUS_EARTH + ALTITUDE_0)))
 if SIM_TYPE == HORIZONTAL_SIM:
+    SIM_MAX_TIME = 20
     INIT_VELOCITIES = [10]  
     INIT_ANGLES = [0]        # so, with now forces, and some initial velocity with initial angle 0 -> the altitude will remain the same even in round earth 
 if SIM_TYPE == VERTICAL_SIM:
     INIT_VELOCITIES = [0]  
     INIT_ANGLES = [0]        # so, with now forces, and some initial velocity with initial angle 90 -> the altitude will remain the same even in round earth 
-    X_0 = 10_000             # We start with the object at coord (10_000, altitude_0) in the flat earth, and so we'll check if in the round earth the "coming down" is well computed, meaning it will always keep the same vertical position (and it won't be 10_000, but a little less because 10_000 is x value at 130_000m, but on the surface is a little closer to the origin) 
+    ALTITUDE_0 = RADIUS_EARTH       # in simulation loop will be added to another                                                # "interface" == Initial altitude (m)
+    X_0 = RADIUS_EARTH * 2             # We start with the object at coord (10_000, altitude_0) in the flat earth, and so we'll check if in the round earth the "coming down" is well computed, meaning it will always keep the same vertical position (and it won't be 10_000, but a little less because 10_000 is x value at 130_000m, but on the surface is a little closer to the origin) 
+if SIM_TYPE == ORBITAL_VEL_SIM:
+    SIM_MAX_TIME = 20
+    INIT_VELOCITIES = [np.sqrt(G_M / (RADIUS_EARTH + ALTITUDE_0))]  
+    INIT_ANGLES = [0] 
+if SIM_TYPE == ESCAPE_VEL_SIM:
+    SIM_MAX_TIME = 20
+    INIT_VELOCITIES = [np.sqrt(2 * G_M / (RADIUS_EARTH + ALTITUDE_0))]  
+    INIT_ANGLES = [0]
 
 # Capsule parameters
 CAPSULE_MASS = 12_000               # Mass of the capsule (kg)
@@ -88,7 +101,7 @@ CAPSULE_LIFT_COEFFICIENT = LIFT_COEFFICIENT
 PARACHUTE_SURFACE_AREA = 301                # surface considered for parachute's drag coefficient (m^2)
 PARACHUTE_DRAG_COEFFICIENT = 1.0            # parachute's drag coefficient
 PARACHUTE_MAX_OPEN_ALTITUDE = 1_000                   # boundary altitude for deployment of the parachutes (m)
-PARACHUTE_MAX_OPEN_VELOCITY = 1_00                    # boundary velocity for deployment of the parachutes (m/s)
+PARACHUTE_MAX_OPEN_VELOCITY = 100                    # boundary velocity for deployment of the parachutes (m/s)
 
 # Parameter boundaries
 MIN_HORIZONTAL_DISTANCE = 2_500_000         # lower boundary for horizontal distance (m)
@@ -112,6 +125,7 @@ if SIM_TO_RUN == PROJECTILE_SIM:
         ALTITUDE_0 = 1_000
         INIT_ANGLES = [0]        # so, with now forces, and some initial velocity with initial angle 0 -> the altitude will remain the same even in round earth 
     if SIM_TYPE == VERTICAL_SIM:
+        INIT_VELOCITIES = [1_000] 
         INIT_ANGLES = [90]        # so, with now forces, and some initial velocity with initial angle 90 -> the altitude will remain the same even in round earth 
         X_0 = 1_000
 else:
@@ -159,7 +173,7 @@ def get_air_density_cubic_spline(y):
     return result if result > 0.0 else 0.0
 
 
-def get_tot_acceleration(x, y, vx, vy):
+def get_air_acceleration(x, y, vx, vy):
     '''calculates the total acceleration on the capsule, which depends if the parachutes are deployed or not.'''
     # Common air components for drag and lift
     v_abs = np.sqrt(vx**2 + vy**2)
@@ -180,7 +194,7 @@ def get_tot_acceleration(x, y, vx, vy):
        
         if LIFT_PERPENDICULAR_TO_VELOCITY:
             # Add lift components to y and x, in order to keep it perpendicular to velocity: for that we find the velocity angle, we find a lift angle (and we make sure it is always pointing up so if l_angle > 180º we subtract 180º), and we find components of lift for y and x:
-            v_angle = np.arctan2(vy, vx)
+            v_angle = np.arctan2(vy, vx) # TODO: confirmar que tendo angulos a começar de y isto está bem
             l_angle = v_angle + np.pi/2
             if l_angle > np.pi:
                 l_angle -= np.pi
@@ -189,18 +203,16 @@ def get_tot_acceleration(x, y, vx, vy):
         else:
             # Add all lift force to y component, independent of the direction of velocity:
             ay += lift
-
-    # Gravity
-    g = CONSTANT_G if CONSTANT_GRAVITY else G_M / (x**2 + y**2) # G_M / r**2 # simplified from: (np.sqrt(x**2 + y**2)**2)
-    ay -= g
     return ax, ay
 
-
+def get_gravity_acceleration(x, y):
+    g = CONSTANT_G if CONSTANT_GRAVITY else G_M / (x**2 + y**2) # G_M / r**2 # simplified from: (np.sqrt(x**2 + y**2)**2)
+    return g
 
 def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
     '''runs a simulation of the capsule reentry'''
     if SHOW_DETAILS:
-        print("\nsimulation:  angle: ", angle_0, "   init velocity: ", v_0, "   altitude: ", altitude_0, "   x_0: ", x_0)
+        print("\nsimulation:  path_angle: ", angle_0, "   init velocity: ", v_0, "   altitude: ", altitude_0, "   x_0: ", x_0)
     # metrics to store
     times = []
     path_x = [] # we discard initial values for simplicity (because we don't know initial values of other metrics like acceleration)
@@ -208,46 +220,49 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
     velocities = []
     accelerations = [] 
     passed_max_g_limit = False
-    passed_max_horizontal_dist = False
 
     # accumulator variables for the simulation
     time = 0
     x = x_0                         
-    y = RADIUS_EARTH + altitude_0  
-    earth_angle = np.arctan(x / y)
-    sum_earth_angle = 0
+    y = RADIUS_EARTH + altitude_0 
+
+    earth_angle = np.radians(90) - np.arctan2(y, x) # angle in origin from y axis to current position to convert flat earth steps to round earth steps
+    x_round = RADIUS_EARTH * earth_angle if ROUND_EARTH else x
+    y_round = (np.sqrt(x**2 + y**2) - RADIUS_EARTH) if ROUND_EARTH else (y - RADIUS_EARTH) # altitude above the Earth's surface
+
+    accumulated_horizontal_distance = 0             # accumulated horizontal distance in round earth to double check if the horizontal distance is well computed
     
-    # initial velocity on flat earth
+    # initial velocity 
     angle_0_rad = np.radians(angle_0)
     vx = v_0 * np.cos(angle_0_rad)
     vy = v_0 * np.sin(angle_0_rad)
     if SHOW_DETAILS:
-        print( "Starting loops with: x: ", x, "   y: ", y, " (R = ", RADIUS_EARTH,")   vx: ", vx, "   vy: ", vy)
-    
-    while y >= RADIUS_EARTH:  # more stop conditions are inside the loop so we can store those circumstances
-        # Simulation control conditions
-        if round(time) % 2_000 == 0: 
+        print( "Starting loops with: x: ", x, "   y: ", y, " (R = ", RADIUS_EARTH,")   vx: ", vx, "   vy: ", vy, "   earth_angle: ", np.degrees(earth_angle))
+    steps = 0
+    while y_round >= 0:  # more stop conditions are inside the loop so we can store those circumstances
+        show_details = steps % (200_000) == 0 # we'll show details at this intervals 
+        steps += 1
+        if show_details: 
             if SHOW_DETAILS:
-                print("time: ", round(time, 0), "   x: ", round(x, 0), " y: ", round(y, 0), " vx: ", round(vx, 0), " vy: ", round(vy, 0))
-            if time > SIM_MAX_TIME:
-                print("Max time surpassed. Exiting simulation for angle: ", angle_0, "   init velocity: ", v_0)
-                break
+                print("t ",round(time,1)," - init:  x: ", round(x, 0), " y: ", round(y, 0), " vx: ", round(vx, 0), " vy: ", round(vy, 0), "     -->> sim: ang: ", angle_0, "    vel: ", v_0)
+        if time > SIM_MAX_TIME:
+            print("Max time surpassed. Exiting simulation for angle: ", angle_0, "   init velocity: ", v_0)
+            break
                    
         # time
         time += dt
 
         # acceleration
-        ax, ay = (0, 0) if SIM_TYPE == HORIZONTAL_SIM else get_tot_acceleration(x, y, vx, vy)
-
+        ax, ay = (0, 0) if SIM_TYPE == HORIZONTAL_SIM else get_air_acceleration(x, y, vx, vy)
         a = np.sqrt(ax**2 + ay**2)
         if(a > MAX_ACCELERATION):
             passed_max_g_limit = True
             # don't break. continue simulation to store the metrics
+        ay -= get_gravity_acceleration(x, y)
 
         # velocity
         vx_step = ax * dt
         vy_step = ay * dt
-
         if ROUND_EARTH:
             vx, vy = make_round_earth(vx, vy, vx_step, vy_step, earth_angle)
         else:
@@ -255,26 +270,36 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
             vy += vy_step
         
         v = np.sqrt(vx**2 + vy**2)
+        if show_details: 
+            print("t ",round(time,1)," - vel update:    vx_step: ", round(vx_step, 4), "   vy_step: ", round(vy_step, 4), "  angle: ", round(np.degrees(earth_angle),1), "   vx: ", round(vx,2), "   vy: ", round(vy,2) )
         
         # previous x positions
-        previous_x = x
-
-        # positions
-        x += vx * dt 
-        y += vy * dt
-
-
-        # update earth angle for next step
-        earth_angle = np.arctan(x/y)
-        sum_earth_angle += (x - previous_x)/y
+        previous_x = x  # to update accumulated_horizontal_distance
         
-        if SHOW_DETAILS:
+        # positions
+        x += vx * dt
+        y += vy * dt
+        if show_details:
+            print("t ",round(time,1)," - pos update:    x_step: ", round(vx * dt, 2), "   y_step: ", round(vy * dt, 2) ,"     x: ", round(x,2), "   y: ", round(y,2))
+        
+        # update earth angle for next step
+        earth_angle = np.radians(90) - np.arctan2(y, x)  # angle in origin from y axis to current position   
+        accumulated_horizontal_distance += (x - previous_x)/y   # get accumulated horizontal distance in round earth to double check if the horizontal distance is well computed
+        
+        if SHOW_DETAILS and steps % 1_000 == 0: # we don't need all steps for the plots
             # store metrics
             times.append(time)
-            path_x.append(x)
-            path_y.append(y - RADIUS_EARTH)   # altitude above the Earth's surface 
+            x_round = RADIUS_EARTH * earth_angle if ROUND_EARTH else x
+            y_round = (np.sqrt(x**2 + y**2) - RADIUS_EARTH) if ROUND_EARTH else (y - RADIUS_EARTH) # altitude above the Earth's surface
+            if show_details and ROUND_EARTH:
+                print("t ",round(time,1)," - (x,y) in round earth:    x_round: ", round(x_round,2), "   y_round: ", round(y_round,2))
+            path_x.append(x_round)
+            path_y.append(y_round)    
             velocities.append(v)
             accelerations.append(a)
+
+    if SHOW_DETAILS:
+        print("end t ",round(time,1)," - (x,y) in round earth:    x_round: ", round(x_round,2), "   y_round: ", round(y_round,2))
 
     sim_results = {
         INIT_ANGLE: angle_0,
@@ -286,15 +311,16 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
         TIMES: times
     }
 
-    sum_earth_angle *= RADIUS_EARTH
+    accumulated_horizontal_distance *= RADIUS_EARTH
 
     if SHOW_DETAILS:
-        print("x:   min: ", min(path_x), "     max: ", max(path_x), "   diff: ", max(path_x) - min(path_x))
-        print("horizontal distânce: ", sum_earth_angle)
-        print("y:   min: ", min(path_y), "     max: ", max(path_y), "   diff: ", max(path_y) - min(path_y))
-        print("velocities:   min: ", min(velocities), "     max: ", max(velocities), "  final: ", velocities[-1] )
-        print("accelerations:   min: ", min(accelerations), "     max: ", max(accelerations), "  final: ", accelerations[-1])
-        print("times:   min: ", min(times), "     max: ", max(times))
+        print("\nx_min:  ", round(min(path_x),2), "     x_max: ", round(max(path_x),2), "   x_horizontal_distance: ", round(max(path_x) - min(path_x),2))
+        if not ROUND_EARTH:
+            print("accumulated round earth horizontal distance after flat earth calculations: ", round(accumulated_horizontal_distance,2))
+        print("y_min: ", round(min(path_y),2), "     y_max: ", round(max(path_y),2), "   y_vertical_distance: ", round(max(path_y) - min(path_y),2))
+        print("vel_min: ", round(min(velocities),2), "     vel_max: ", round(max(velocities),2), "  vel_final: ", round(velocities[-1],2) )
+        print("acc_min: ", round(min(accelerations),2), "     acc_max: ", round(max(accelerations),2), "  acc_final: ", round(accelerations[-1],2))
+        print("time duration:  " , round(max(times) - min(times),2) , "s")
     
     landed_after_min_horizontal_distance = x >= MIN_HORIZONTAL_DISTANCE
     landed_before_max_horizontal_distance = x <= MAX_HORIZONTAL_DISTANCE
@@ -302,7 +328,6 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
 
     successfull_landing = not passed_max_g_limit and landed_below_max_landing_velocity and landed_after_min_horizontal_distance and landed_before_max_horizontal_distance
 
-    # return sim_results, successfull_landing
     return sim_results, successfull_landing, not passed_max_g_limit, landed_below_max_landing_velocity, landed_after_min_horizontal_distance and landed_before_max_horizontal_distance, 
 
 
@@ -315,9 +340,10 @@ def main():
     distance_pairs = []
 
     if SHOW_DETAILS:
-        axs = plot.start_sims_metrics_plot(SIM_TO_RUN == REENTRY_SIM, SIM_TO_SHOW_IN_PLOT_METRICS)
-        random_sim_to_show = np.random.randint(0, len(INIT_ANGLES)*len(INIT_VELOCITIES), size=SIM_TO_SHOW_IN_PLOT_METRICS) # we'll show 10 random simulations and not all of them to not clutter the plot
-    sim_to_show = 0
+        sims_to_show = min(SIMS_TO_SHOW_IN_PLOT_METRICS, len(INIT_ANGLES) * len(INIT_VELOCITIES))
+        axs = plot.start_sims_metrics_plot(SIM_TO_RUN == REENTRY_SIM, sims_to_show)
+        random_sim_to_show = np.random.choice(len(INIT_ANGLES) * len(INIT_VELOCITIES), size=sims_to_show, replace=False)
+    sim_number = 0
     for angle_0 in INIT_ANGLES:
         for v_0 in INIT_VELOCITIES:
             sim_metrics, successfull_landing, g_limit, velocity_limit, horizontal_landing_limit = run_entry_simulation(angle_0, v_0)
@@ -330,15 +356,16 @@ def main():
             if horizontal_landing_limit:
                 distance_pairs.append((angle_0, v_0))
             if SHOW_DETAILS:
-                sim_to_show += 1
-                if sim_to_show in random_sim_to_show:
-                    plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)
+                if sim_number in random_sim_to_show:
+                    plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)                
+                sim_number += 1
     if SHOW_DETAILS:
         plot.end_sims_metrics_plot()
-    plot.plot_reentry_conditions(acceleration_pairs, velocity_pairs, distance_pairs)
-    plot.plot_reentry_parameters(successful_pairs)
+    # plot.plot_reentry_conditions(acceleration_pairs, velocity_pairs, distance_pairs)
+    # plot.plot_reentry_parameters(successful_pairs)
 
 
 
 if __name__ == "__main__":
     main()
+    print()
