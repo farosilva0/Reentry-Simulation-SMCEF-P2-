@@ -45,10 +45,23 @@ def plot_reentry_parameters(pairs):
 
 
 ############################################################################################################
-def plot_reentry_conditions(tot_sims_metrics):
+def plot_reentry_conditions(acceleration_pairs, velocity_pairs, horizontal_landing_limit):
+    fig, axs = plt.subplots(ncols=3, figsize=(15, 7))
+    fig.suptitle('Acceleration, velocity and horizontal distance conditions for a successful reentry', fontsize=10)
+    plot_condition_metric(axs[0], acceleration_pairs)
+    plot_condition_metric(axs[1], velocity_pairs)
+    plot_condition_metric(axs[2], horizontal_landing_limit)
+    plt.show()
 
-    print(f'\n  ')
 
+def plot_condition_metric(ax, pairs):
+    for angle, velocity in pairs:
+        ax.plot(velocity, -angle,'-o', label=f'angle: {angle}')
+    ax.legend(fontsize=6)
+    ax.set_xlabel('initial velocity (m/s)')
+    ax.set_ylabel('downward angle (º)')
+    ax.tick_params(axis='both', which='major', labelsize=7)
+    ax.grid()
 
 ############################################################################################################
 # Plot Simulation Metrics -> Function divided in step so we can plot while the simulation is running, instead of having to store all values and just plot at the end
