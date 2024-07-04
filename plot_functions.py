@@ -13,6 +13,7 @@ ACCELERATIONS = 'accelerations'
 
 
 ############################################################################################################
+
 def plot_air_density(f):
     '''plot the values of air density in function of the altitude'''
     x = np.linspace(-1000, 500000, 1000000)
@@ -29,11 +30,13 @@ def plot_air_density(f):
 
 
 ############################################################################################################
+
 def plot_reentry_parameters(pairs):
     '''plot the parameter values that bound valid reentry solutions'''
     fig, ax = plt.subplots(figsize=(12, 8))
+    fig.subplots_adjust(left=0.05, bottom=0.06, right=0.95, top=0.96)
     for angle, velocity in pairs:
-        ax.plot(velocity, -angle,'-o', label=f'angle: {angle}')
+        ax.plot(velocity, -angle,'-o', color='b')
     ax.set_xlabel('initial velocity (m/s)')
     ax.set_ylabel('downward angle (º)')
     ax.legend()
@@ -43,27 +46,28 @@ def plot_reentry_parameters(pairs):
     plt.title(title)
     plt.show()
 
+############################################################################################################
+
+# def plot_reentry_conditions(acceleration_pairs, velocity_pairs, horizontal_landing_limit):
+#     fig, axs = plt.subplots(ncols=3, figsize=(15, 7))
+#     fig.suptitle('Acceleration, velocity and horizontal distance conditions for a successful reentry', fontsize=10)
+#     plot_condition_metric(axs[0], acceleration_pairs)
+#     plot_condition_metric(axs[1], velocity_pairs)
+#     plot_condition_metric(axs[2], horizontal_landing_limit)
+#     plt.show()
+
+
+# def plot_condition_metric(ax, pairs):
+#     for angle, velocity in pairs:
+#         ax.plot(velocity, -angle,'-o', label=f'angle: {angle}')
+#     ax.legend(fontsize=6)
+#     ax.set_xlabel('initial velocity (m/s)')
+#     ax.set_ylabel('downward angle (º)')
+#     ax.tick_params(axis='both', which='major', labelsize=7)
+#     ax.grid()
 
 ############################################################################################################
-def plot_reentry_conditions(acceleration_pairs, velocity_pairs, horizontal_landing_limit):
-    fig, axs = plt.subplots(ncols=3, figsize=(15, 7))
-    fig.suptitle('Acceleration, velocity and horizontal distance conditions for a successful reentry', fontsize=10)
-    plot_condition_metric(axs[0], acceleration_pairs)
-    plot_condition_metric(axs[1], velocity_pairs)
-    plot_condition_metric(axs[2], horizontal_landing_limit)
-    plt.show()
 
-
-def plot_condition_metric(ax, pairs):
-    for angle, velocity in pairs:
-        ax.plot(velocity, -angle,'-o', label=f'angle: {angle}')
-    ax.legend(fontsize=6)
-    ax.set_xlabel('initial velocity (m/s)')
-    ax.set_ylabel('downward angle (º)')
-    ax.tick_params(axis='both', which='major', labelsize=7)
-    ax.grid()
-
-############################################################################################################
 # Plot Simulation Metrics -> Function divided in step so we can plot while the simulation is running, instead of having to store all values and just plot at the end
 
 def start_sims_metrics_plot(is_reentry_sim, plots_to_show): 
