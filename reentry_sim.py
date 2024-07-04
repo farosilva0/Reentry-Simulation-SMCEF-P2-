@@ -15,7 +15,7 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 
 
 # 2. Choose type of simulation from options below:
-SIM_TYPE = 4
+SIM_TYPE = 1
 #------------------------
 NORMAL_SIM = 1
 HORIZONTAL_SIM = 2              # we'll start the simulation with some velocity and angle 0, and no forces, so the altitude will remain the same even in round earth
@@ -43,7 +43,7 @@ SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with de
 SHOW_DETAILS = True
 # TODO: correr com SHOW_DETAILS = False e ver se os resultados são os mesmos, e se não são, ver o que está a ser mostrado que não devia ser mostrado
 
-dt = 0.00001                        # time steps (s)
+dt = 0.1                        # time steps (s)
 SIM_MAX_TIME = 500            # max time for the simulation (s)
 
 SIMS_TO_SHOW_IN_PLOT_METRICS = 10 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
@@ -173,16 +173,16 @@ def get_air_density_cubic_spline(y):
     return result if result > 0.0 else 0.0
 
 
-def get_air_acceleration(x, y, vx, vy):
+def get_tot_acceleration(y, vx, vy):
     '''calculates the total acceleration on the capsule, which depends if the parachutes are deployed or not.'''
     # Common air components for drag and lift
     v_abs = np.sqrt(vx**2 + vy**2)
     air_density =  1.225 if CONSTANT_AIR_DENSITY else get_air_density_cubic_spline(y)
-    F_air = 0.5 * CAPSULE_SURFACE_AREA * air_density * v_abs / CAPSULE_MASS
+    F_air = -0.5 * CAPSULE_SURFACE_AREA * air_density * v_abs / CAPSULE_MASS
 
     # Drag and Lift: 
-    ax = -F_air * CAPSULE_DRAG_COEFFICIENT * vx # "-" because it's a resistance force on opposite direction of the velocity (in case of object falling down velocity is also negative, so in that case the force will be positive, slowing the falling)
-    ay = -F_air * CAPSULE_DRAG_COEFFICIENT * vy 
+    ax = F_air * CAPSULE_DRAG_COEFFICIENT * vx # "-" because it's a resistance force on opposite direction of the velocity (in case of object falling down velocity is also negative, so in that case the force will be positive, slowing the falling)
+    ay = F_air * CAPSULE_DRAG_COEFFICIENT * vy 
 
     if SIM_TO_RUN == REENTRY_SIM and SIM_WITH_PARACHUTE and v_abs <= PARACHUTE_MAX_OPEN_VELOCITY and (y - RADIUS_EARTH) <= PARACHUTE_MAX_OPEN_ALTITUDE:
         # if we open the parachutes, we'll add its drag force in the opposite direction of the velocity
@@ -190,24 +190,16 @@ def get_air_acceleration(x, y, vx, vy):
         ax -= F_drag_parachute * vx
         ay -= F_drag_parachute * vy
     else:
-        lift = np.abs(F_air * CAPSULE_LIFT_COEFFICIENT * v_abs)
-       
-        if LIFT_PERPENDICULAR_TO_VELOCITY:
-            # Add lift components to y and x, in order to keep it perpendicular to velocity: for that we find the velocity angle, we find a lift angle (and we make sure it is always pointing up so if l_angle > 180º we subtract 180º), and we find components of lift for y and x:
-            v_angle = np.arctan2(vy, vx) # TODO: confirmar que tendo angulos a começar de y isto está bem
-            l_angle = v_angle + np.pi/2
-            if l_angle > np.pi:
-                l_angle -= np.pi
-            ay += lift * np.sin(v_angle) 
-            ax += lift * np.cos(v_angle) 
-        else:
-            # Add all lift force to y component, independent of the direction of velocity:
-            ay += lift
-    return ax, ay
+        ay -= F_air * CAPSULE_LIFT_COEFFICIENT * v_abs
 
-def get_gravity_acceleration(x, y):
-    g = CONSTANT_G if CONSTANT_GRAVITY else G_M / (x**2 + y**2) # G_M / r**2 # simplified from: (np.sqrt(x**2 + y**2)**2)
-    return g
+    # Acceleration related to the boundary
+    a = np.sqrt(ax**2 + ay**2)
+
+    # Gravity
+    g = CONSTANT_G if CONSTANT_GRAVITY else G_M / y**2
+    ay -= g
+    return ax, ay, a
+
 
 def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
     '''runs a simulation of the capsule reentry'''
@@ -253,12 +245,11 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
         time += dt
 
         # acceleration
-        ax, ay = (0, 0) if SIM_TYPE == HORIZONTAL_SIM else get_air_acceleration(x, y, vx, vy)
-        a = np.sqrt(ax**2 + ay**2)
+        ax, ay, a = (0, 0, 0) if SIM_TYPE == HORIZONTAL_SIM else get_tot_acceleration(y, vx, vy)
+
         if(a > MAX_ACCELERATION):
             passed_max_g_limit = True
             # don't break. continue simulation to store the metrics
-        ay -= get_gravity_acceleration(x, y)
 
         # velocity
         vx_step = ax * dt
@@ -346,23 +337,23 @@ def main():
     sim_number = 0
     for angle_0 in INIT_ANGLES:
         for v_0 in INIT_VELOCITIES:
-            sim_metrics, successfull_landing, g_limit, velocity_limit, horizontal_landing_limit = run_entry_simulation(angle_0, v_0)
+            sim_metrics, successfull_landing, g_limit, velocity_limit, horizontal_landing_limit = run_entry_simulation(-angle_0, v_0)
             if successfull_landing:
                 successful_pairs.append((angle_0, v_0))
-            if g_limit:
-                acceleration_pairs.append((angle_0, v_0))
-            if velocity_limit:
-                velocity_pairs.append((angle_0, v_0))
-            if horizontal_landing_limit:
-                distance_pairs.append((angle_0, v_0))
-            if SHOW_DETAILS:
-                if sim_number in random_sim_to_show:
-                    plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)                
-                sim_number += 1
+            # if g_limit:
+            #     acceleration_pairs.append((angle_0, v_0))
+            # if velocity_limit:
+            #     velocity_pairs.append((angle_0, v_0))
+            # if horizontal_landing_limit:
+            #     distance_pairs.append((angle_0, v_0))
+            # if SHOW_DETAILS:
+            #     sim_to_show += 1
+            #     if sim_to_show in random_sim_to_show:
+            #         plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)
     if SHOW_DETAILS:
         plot.end_sims_metrics_plot()
     # plot.plot_reentry_conditions(acceleration_pairs, velocity_pairs, distance_pairs)
-    # plot.plot_reentry_parameters(successful_pairs)
+    plot.plot_reentry_parameters(successful_pairs)
 
 
 
