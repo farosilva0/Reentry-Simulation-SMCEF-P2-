@@ -4,14 +4,14 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
 
-from reentry_sim import *
+from reentry_app import *
 
 # TODO: isto vai buscar o get_tot_acceleration() do reentry_sim
 # mas temos de usar o g = CONSTANT - comentar a seguir porque dá infinitos... ver porquê depois
 
 def solve_ivp_reentry_simulation(t, array):
     x, vx, y, vy = array
-    ax, ay = get_air_acceleration(x, y, vx, vy)
+    ax, ay = get_total_acceleration(x, y, vx, vy)
     return [vx, 
             -np.sqrt(vx**2 + vy**2)*vx - ax * dt, 
             vy, 

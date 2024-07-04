@@ -1,4 +1,4 @@
-from reentry_sim import *
+from reentry_app import *
 import matplotlib.pyplot as plt
 
 
