@@ -320,16 +320,17 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
 
     successfull_landing = not passed_max_g_limit and landed_below_max_landing_velocity and landed_after_min_horizontal_distance and landed_before_max_horizontal_distance
 
-    return sim_results, successfull_landing, not passed_max_g_limit, landed_below_max_landing_velocity, landed_after_min_horizontal_distance and landed_before_max_horizontal_distance, 
+    return sim_results, successfull_landing, passed_max_g_limit, landed_below_max_landing_velocity, landed_after_min_horizontal_distance, landed_before_max_horizontal_distance, 
 
 
 
 def main():
 
     successful_pairs = []
+    landed_before = []
+    landed_after = []
     acceleration_pairs = []
     velocity_pairs = []
-    distance_pairs = []
 
     if SHOW_DETAILS:
         sims_to_show = min(SIMS_TO_SHOW_IN_PLOT_METRICS, len(INIT_ANGLES) * len(INIT_VELOCITIES))
@@ -338,9 +339,18 @@ def main():
     sim_number = 0
     for angle_0 in INIT_ANGLES:
         for v_0 in INIT_VELOCITIES:
-            sim_metrics, successfull_landing, g_limit, velocity_limit, horizontal_landing_limit = run_entry_simulation(angle_0, v_0)
+            sim_metrics, successfull_landing, g_limit, velocity_limit, horizontal_min, horizontal_max = run_entry_simulation(angle_0, v_0)
             if successfull_landing:
                 successful_pairs.append((angle_0, v_0))
+            elif g_limit:
+                acceleration_pairs.append((angle_0, v_0))
+            elif not velocity_limit:
+                velocity_pairs.append((angle_0, v_0))
+            elif horizontal_min:
+                landed_before.append((angle_0, v_0))
+            elif horizontal_max:
+                landed_after.append((angle_0, v_0))
+            
             # if g_limit:
             #     acceleration_pairs.append((angle_0, v_0))
             # if velocity_limit:
@@ -354,6 +364,8 @@ def main():
         plot.end_sims_metrics_plot()
     # plot.plot_reentry_conditions(acceleration_pairs, velocity_pairs, distance_pairs)
     plot.plot_reentry_parameters(successful_pairs)
+    plot.plot_all_reentrys(successful_pairs, acceleration_pairs, velocity_pairs, landed_before, landed_after)
+    
 
 
 
