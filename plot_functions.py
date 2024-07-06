@@ -45,6 +45,30 @@ def plot_reentry_parameters(pairs):
         ax.legend('No valid reentry solutions found.')
     plt.title(title)
     plt.show()
+    
+def plot_all_reentrys(success, accel, vel, before, after):
+    '''plot the parameter values for all reentry solutions'''
+    fig, ax = plt.subplots(figsize=(12, 8))
+    fig.subplots_adjust(left=0.05, bottom=0.06, right=0.95, top=0.96)
+    for angle, velocity in success:
+        ax.plot(velocity, -angle,'-o', color='lime', label ='success' if angle == success[0][0] and velocity == success[0][1] else '')
+    for angle, velocity in accel:
+        ax.plot(velocity, -angle,'-o', color='r', label ='over accel' if angle == accel[0][0] and velocity == accel[0][1] else '')
+    for angle, velocity in vel:
+        ax.plot(velocity, -angle,'-o', color='blueviolet', label ='over speed' if angle == vel[0][0] and velocity == vel[0][1] else '')
+    for angle, velocity in before:
+        ax.plot(velocity, -angle,'-o', color='pink', label ='landed before' if angle == before[0][0] and velocity == before[0][1] else '')
+    for angle, velocity in after:
+        ax.plot(velocity, -angle,'-o', color='b', label ='landed after' if angle == after[0][0] and velocity == after[0][1] else '')
+    ax.set_xlabel('initial velocity (m/s)')
+    ax.set_ylabel('downward angle (º)')
+    ax.legend()
+    title = 'Reentry Parameters'
+    if len(success) == 0:
+        ax.legend('No valid reentry solutions found.')
+    plt.title(title)
+    plt.show()
+
 
 ############################################################################################################
 
