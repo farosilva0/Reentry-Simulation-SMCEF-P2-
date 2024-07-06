@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.interpolate import CubicSpline
 from scipy.integrate import solve_ivp
 
-from reentry_app import *
+from run_various_sims import *
 
 # TODO: isto vai buscar o get_tot_acceleration() do reentry_sim
 # mas temos de usar o g = CONSTANT - comentar a seguir porque dá infinitos... ver porquê depois
