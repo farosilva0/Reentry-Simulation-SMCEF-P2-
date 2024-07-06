@@ -119,15 +119,18 @@ def run_all_simulations(method_f):
     landed_before = []
     landed_after = []
 
-    if SHOW_DETAILS:
-        sims_to_show = min(SIMS_TO_SHOW_IN_PLOT_METRICS, len(INIT_ANGLES) * len(INIT_VELOCITIES))
-        axs = plot.start_sims_metrics_plot(SIM_TO_RUN == REENTRY_SIM, sims_to_show)
-        random_sim_to_show = np.random.choice(len(INIT_ANGLES) * len(INIT_VELOCITIES), size=sims_to_show, replace=False)
-    sim_number = 0
     p = get_params()
     print("\n"*20, "Running simulations with parameters: \n", p)
+
+    if SHOW_DETAILS:
+        sims_to_show = min(p._sims_to_show_in_plot_metrics, len(p._init_angles) * len(p._init_velocities))
+        axs = plot.start_sims_metrics_plot(SIM_TO_RUN == REENTRY_SIM, sims_to_show)
+        random_sim_to_show = np.random.choice(len(p._init_angles) * len(p._init_velocities), size=sims_to_show, replace=False)
+    sim_number = 0
     for angle_0 in p._init_angles:
         for v_0 in p._init_velocities:
+            sim_number += 1
+            
             angle_0_rad = np.radians(angle_0)
             vx = v_0 * np.cos(angle_0_rad)
             vy = v_0 * np.sin(angle_0_rad)

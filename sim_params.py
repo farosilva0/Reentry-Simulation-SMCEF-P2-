@@ -53,12 +53,12 @@ class Params:
         # Capsule parameters
         self._capsule_mass = 12_000
         self._capsule_surface_area = 4 * np.pi
-        self._capsule_drag_coefficient = 0
-        self._capsule_lift_coefficient = 0
+        self._capsule_drag_coefficient = 1.2
+        self._capsule_lift_coefficient = 1
 
         # Parachute parameters
         self._parachute_surface_area = 301
-        self._parachute_drag_coefficient = 0
+        self._parachute_drag_coefficient = 1
         self._parachute_max_open_altitude = 1_000
         self._parachute_max_open_velocity = 100
 
