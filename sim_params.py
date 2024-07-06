@@ -109,10 +109,10 @@ class Params:
         
 
         # Initial conditions
-        self.x_0 = 0
-        self.altitude_0 = 130_000  
-        self.init_angles = np.negative(np.arange(start=0, stop=15.1, step=2))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
-        self.init_velocities = np.arange(start=0, stop=15_001, step=2_000)    # Possible Initial velocities (m/s)
+        self._x_0 = 0
+        self._altitude_0 = 130_000
+        self._init_angles = np.negative(np.arange(start=0, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+        self._init_velocities = np.arange(start=0, stop=15_001, step=300)    # Possible Initial velocities (m/s)
 
         # Capsule parameters
         self.capsule_mass = 12_000

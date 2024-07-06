@@ -51,8 +51,8 @@ def get_acceleration(Sk, Mk, p: Params):
     ay = F_air_drag * vy / v_mass
     # print("F_air_drag:        ", round(F_air_drag, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
 
-    if v <= p.parachute_max_open_velocity and (y - RADIUS_EARTH) <= p.parachute_max_open_altitude:
-        F_air_drag_parachute = -0.5 * p.capsule_drag_coefficient * p.capsule_surface_area * air_density * v**2
+    if v <= p._parachute_max_open_velocity and (y - RADIUS_EARTH) <= p._parachute_max_open_altitude:
+        F_air_drag_parachute = -0.5 * p._parachute_drag_coefficient * p._parachute_surface_area * air_density * v**2
         F_air_drag += F_air_drag_parachute
         ax += F_air_drag_parachute * vx / v_mass
         ay += F_air_drag_parachute * vy / v_mass
@@ -142,13 +142,18 @@ def run_all_simulations(method_f):
             M0 = np.array([v_0, 0, 0])  
 
             S, M, t = run_one_simulation(S0, M0, p, method_f, reentry_slope)
-            if np.any(M[A] > p.max_acceleration):
-                acceleration_pairs.append((angle_0, v_0))
-            elif M[V][-1] > p.max_landing_velocity:
+            passed_max_acceleration = False
+            for i in range(0, len(M)):
+                if(M[i][A] > p._max_acceleration):
+                    acceleration_pairs.append((angle_0, v_0))
+                    break
+            # if np.any(M[A] > p.max_acceleration):
+            #     acceleration_pairs.append((angle_0, v_0))
+            if M[-1][V] > p._max_landing_velocity:
                 velocity_pairs.append((angle_0, v_0))
-            elif M[ACC_HORIZ_DIST][-1] < p.min_horizontal_distance:
+            elif M[-1][ACC_HORIZ_DIST] < p._min_horizontal_distance:
                 landed_before.append((angle_0, v_0))
-            elif M[ACC_HORIZ_DIST][-1] > p.max_horizontal_distance:
+            elif M[-1][ACC_HORIZ_DIST] > p._max_horizontal_distance:
                 landed_after.append((angle_0, v_0))
             else:
                 successful_pairs.append((angle_0, v_0))
