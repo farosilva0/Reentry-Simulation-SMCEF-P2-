@@ -43,27 +43,27 @@ def get_acceleration(Sk, Mk, p: Params):
     
     air_density = get_air_density_cubic_spline(y - RADIUS_EARTH)
     
-    F_air_drag = -0.5 * p._capsule_surface_area * air_density * p._capsule_drag_coefficient * v**2
-    v_mass = v * p._capsule_mass
+    F_air_drag = -0.5 * p.capsule_surface_area * air_density * p.capsule_drag_coefficient * v**2
+    v_mass = v * p.capsule_mass
     # print("init values in acc: x: ", round(x, 2), "  y:", round(y, 2), "  vx:", round(vx, 2), "  vy:", round(vy, 2), "  v:", round(v, 2), "  air_density:", round(air_density, 2), " v_mass:", round(v_mass, 2))
     
     ax = F_air_drag * vx / v_mass
     ay = F_air_drag * vy / v_mass
     # print("F_air_drag:        ", round(F_air_drag, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
 
-    if v <= p._parachute_max_open_velocity and (y - RADIUS_EARTH) <= p._parachute_max_open_altitude:
-        F_air_drag_parachute = -0.5 * p._capsule_drag_coefficient * p._capsule_surface_area * air_density * v**2
+    if v <= p.parachute_max_open_velocity and (y - RADIUS_EARTH) <= p.parachute_max_open_altitude:
+        F_air_drag_parachute = -0.5 * p.capsule_drag_coefficient * p.capsule_surface_area * air_density * v**2
         F_air_drag += F_air_drag_parachute
         ax += F_air_drag_parachute * vx / v_mass
         ay += F_air_drag_parachute * vy / v_mass
         F_lift = 0
         # print("F_drag_parachute: ", round(F_air_drag_parachute, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
     else:
-        F_lift = - 0.5 * p._capsule_surface_area * air_density * p._capsule_lift_coefficient * v**2
-        ay -= (F_lift / p._capsule_mass)
+        F_lift = - 0.5 * p.capsule_surface_area * air_density * p.capsule_lift_coefficient * v**2
+        ay -= (F_lift / p.capsule_mass)
         # print("F_lift:           ", round(F_lift, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
     
-    Mk[A] = (F_lift - F_air_drag) / p._capsule_mass
+    Mk[A] = (F_lift - F_air_drag) / p.capsule_mass
     
     # Gravity
     g = G_M / y**2
@@ -74,7 +74,9 @@ def get_acceleration(Sk, Mk, p: Params):
 
 def reentry_slope(Sk, Mk, p:Params):
     ''' given the previous state (Sk), returns the derivatives (ODEs) for each variable of the System [x, y, vx, vy]
-        and updates the metrics for the current state with the value of total acceleration without gravity. '''
+        and updates the metrics for the current state with the value of total acceleration without gravity. 
+        returns Sk1 as a new vector by value, not altering the original Sk. 
+        Mk is updated by reference, so it is changed in the original variable.'''
     
     slopes = np.zeros(4, dtype=float)
     # vel derivatives == aceleeration in the current state (given considering current velocity and altitude)
@@ -92,11 +94,11 @@ def reentry_slope(Sk, Mk, p:Params):
 
     
 def run_one_simulation(S0, M0, p: Params, method_f, slope_f):
-    size = int(p._sim_max_time / p._dt + 1)
+    size = int(p.sim_max_time / p.dt + 1)
     
-    S = np.zeros((size, 4), dtype=float) # System variables: [x, y, vx, vy]
-    M = np.zeros((size, 3), dtype=float) # Other metrics: [v, a, accumulated_horizontal_distance]
-    t = np.array([i * p._dt for i in range(size)])
+    S = np.zeros((size, S0.shape[0]), dtype=float) # System variables: [x, y, vx, vy]
+    M = np.zeros((size, M0.shape[0]), dtype=float) # Other metrics: [v, a, accumulated_horizontal_distance]
+    t = np.array([i * p.dt for i in range(size)])
     
     S[0] = S0
     M[0] = M0
@@ -122,36 +124,35 @@ def run_all_simulations(method_f):
     p = get_params()
     print("\n"*20, "Running simulations with parameters: \n", p)
 
-    if SHOW_DETAILS:
-        sims_to_show = min(p._sims_to_show_in_plot_metrics, len(p._init_angles) * len(p._init_velocities))
-        axs = plot.start_sims_metrics_plot(SIM_TO_RUN == REENTRY_SIM, sims_to_show)
-        random_sim_to_show = np.random.choice(len(p._init_angles) * len(p._init_velocities), size=sims_to_show, replace=False)
+    if p.show_details:
+        sims_to_show = min(p.sims_to_show_in_plot_metrics, len(p.init_angles) * len(p.init_velocities))
+        axs = plot.start_sims_metrics_plot(p.is_reentry_sim, sims_to_show)
+        random_sim_to_show = np.random.choice(len(p.init_angles) * len(p.init_velocities), size=sims_to_show, replace=False)
     sim_number = 0
-    for angle_0 in p._init_angles:
-        for v_0 in p._init_velocities:
-            sim_number += 1
+    for angle_0 in p.init_angles:
+        for v_0 in p.init_velocities:
             
             angle_0_rad = np.radians(angle_0)
             vx = v_0 * np.cos(angle_0_rad)
             vy = v_0 * np.sin(angle_0_rad)
 
             # S b= [X, Y, VX, VY]
-            S0 = np.array([p._x_0, p._altitude_0 + RADIUS_EARTH, vx, vy])
+            S0 = np.array([p.x_0, p.altitude_0 + RADIUS_EARTH, vx, vy])
             # M = [V, A, ACC_HORIZ_DIST]
             M0 = np.array([v_0, 0, 0])  
 
             S, M, t = run_one_simulation(S0, M0, p, method_f, reentry_slope)
-            if np.any(M[A] > p._max_acceleration):
+            if np.any(M[A] > p.max_acceleration):
                 acceleration_pairs.append((angle_0, v_0))
-            elif M[V][-1] > p._max_landing_velocity:
+            elif M[V][-1] > p.max_landing_velocity:
                 velocity_pairs.append((angle_0, v_0))
-            elif M[ACC_HORIZ_DIST][-1] < p._min_horizontal_distance:
+            elif M[ACC_HORIZ_DIST][-1] < p.min_horizontal_distance:
                 landed_before.append((angle_0, v_0))
-            elif M[ACC_HORIZ_DIST][-1] > p._max_horizontal_distance:
+            elif M[ACC_HORIZ_DIST][-1] > p.max_horizontal_distance:
                 landed_after.append((angle_0, v_0))
             else:
                 successful_pairs.append((angle_0, v_0))
-            if SHOW_DETAILS:
+            if p.show_details:
                 if sim_number in random_sim_to_show:
                     sim_metrics = {
                         INIT_ANGLE: angle_0,
@@ -163,7 +164,8 @@ def run_all_simulations(method_f):
                         TIMES: t[1:]
                     }
                     plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)
-    if SHOW_DETAILS:
+                sim_number += 1
+    if p.show_details:
         plot.end_sims_metrics_plot()
     # if SIM_TO_RUN == REENTRY_SIM:
     #     plot.plot_reentry_parameters(successful_pairs)

@@ -1,58 +1,57 @@
+
 import numpy as np
-from scipy.linalg import solve
 
-# Placeholder functions for the foxRabbit model and its Jacobian
-def foxRabitModel(u, param):
-    # Placeholder implementation
-    return np.array([-u[0], u[1]])
+from sim_common_fun import *
 
-def foxRabitJacobian(u, param):
-    # Placeholder implementation
-    return np.array([[-1, 0], [0, 1]])
 
-def newton(u, res, resJ, param, epsilon):
-    maxCycles = 1000
-    c = 0
-    fv = res(u, param)
-    while c < maxCycles and np.any(np.abs(fv) > epsilon):
-        c += 1
-        jfv = resJ(u, param)
-        fv = res(u, param)
-        sol = solve(jfv, fv)
-        u += sol
-    return u
+def get_residual_vector(Sk, Sk1, Mk, p: Params, slope_f):
+    ''' returns the residual vector, given by the formula: 
+        Sk1-Sk)/dt - f(Sk1,tk1).'''
+    slopes, Mk = slope_f(Sk1, Mk, p) # f(Sk1,tk1)
+    # TODO: o slope devia ser calculado com (t+dt), não com t, mas na prática nem usamos o t no slope então como é???
+    res_vector = (Sk1 - Sk)/p.dt - slopes
+    return res_vector, Mk
 
-def eulerImplicit(u0, slope, jf, dt, ttotal, param, epsilon=1e-6):
-    size = int(ttotal / dt) + 1  # num steps + 1 initial step
-    dim = u0.shape[0]
-    u = np.zeros((size, dim), dtype=float)
-    t = np.array([i * dt for i in range(size)])
-    u[0] = u0
+
+
+def get_jacobian_matrix(Sk, p: Params):
+    ''' returns the jacobian matrix.'''
+
+    return np.array([[0, 0, 0, 0],  # dx/dt
+                     [0, 0, 0, 0],  # dy/dt
+                     [0, 0, 0, 0],  # dvx/dt
+                     [0, 0, 0, 0]]) # dvy/dt
+     
+
+
+def newton_backward_euler_step(Sk, Mk, p: Params, slope_f):
+    ''' Finds the roots of the system of equations using Newton's method:
+        I/dt-J(f(v,tk1))∆v = - ((v-Sk)/dt - f(v,tk1)) '''
     
-    def residuals(u_k, param):
-        return - (u_k - uk) / dt - slope(u_k, param)
+    max_iter = p.max_iter
+    epsilon = p.epsilon
+
+    Sk1 = np.array(Sk) # initial estimative for Sk1 value, which we set to Sk, and then we'll update in the loop
+    Mk1 = np.array(Mk) 
     
-    def residualj(u_k, param):
-        dim = u_k.shape[0]
-        return np.eye(dim) / dt - jf(u_k, param)
+    Idt = np.eye(Sk.shape[0]) / p.dt # identity matrix divided by dt, to form system matrix (I/dt - J) 
     
-    for i in range(1, size):
-        uk = u[i-1]
-        u[i] = newton(uk, residuals, residualj, param, epsilon)
-        t[i] = t[i-1] + dt
-    
-    return t, u
+    for _ in range(max_iter):
+        res_vector, Mk1 = get_residual_vector(Sk, Sk1, Mk, p, slope_f)
+        if np.all(np.abs(Sk1) < epsilon):
+           break
+        system_matrix = Idt - get_jacobian_matrix(Sk, p) # left side of the equation: I/dt - J
+        delta = np.linalg.solve(system_matrix, -Sk1)
+        Sk1 = Sk + delta
+
+    Mk1[V] = np.sqrt(Sk1[VX]**2 + Sk1[VY]**2)
+    Mk1[ACC_HORIZ_DIST] = Mk[ACC_HORIZ_DIST] + (Sk1[X] - Sk[X]) / Sk1[Y]
+    print("Sk:", Sk, "\nSk1:", Sk1, "\nMk:", Mk, "\nMk1:", Mk1)
+    print("Newton method finished")
+    exit()
+    return Sk1, Mk1
 
 
-# Initial conditions
-u0 = np.array([10, 5])
-param = {}  # Add any necessary parameters here
-dt = 0.001
-ttotal = 24
 
-# Execute the Euler Implicit method
-t, u = eulerImplicit(u0, foxRabitModel, foxRabitJacobian, dt, ttotal, param)
-
-# Print the results
-print("Time array:", t)
-print("Solution array:", u)
+if __name__ == '__main__':
+    run_all_simulations(newton_backward_euler_step)

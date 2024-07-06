@@ -5,65 +5,6 @@ from scipy.interpolate import CubicSpline
 
 from sim_params import *
 
-######################################################################
-#                   CHOOSE SIMULATION OPTIONS                        #
-######################################################################
-
-''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 1
-#------------------------
-REENTRY_SIM = 1
-PROJECTILE_SIM = 2          # simulation of a projectile being launched with different angles and velocities
-#------------------------        
-
-
-''' 2. Choose type of simulation from options below: '''
-SIM_TYPE = 1
-#------------------------
-NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
-HORIZONTAL_SIM = 2              # we'll start the simulation with some velocity and angle 0, and no forces, so the altitude will remain the same even in round earth
-VERTICAL_SIM = 3                # we'll start the simulation without velocity, so with forces object will move vertically
-                                # For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
-ORBITAL_VEL_SIM = 4             # we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
-ESCAPE_VEL_SIM = 5              # we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
-#------------------------
-
-
-
-''' 3. Choose more options: '''
-CONSTANT_GRAVITY = True            # if True we'll use constant values for gravity
-CONSTANT_AIR_DENSITY = True        # if True we'll use constant values for air density
-
-SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
-
-ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
-
-LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
-                                        # if True, lift force will be perpendicular to velocity direction, and always pointing up
-SHOW_DETAILS = True
-# TODO: correr com SHOW_DETAILS = False e ver se os resultados são os mesmos, e se não são, ver o que está a ser mostrado que não devia ser mostrado
-
-
-''' If you want different values than the default ones, choose here: '''
-dt = 0.01                        # time steps (s)
-SIM_MAX_TIME = 60 * 30            # max time for the simulation (s)
-SIMS_TO_SHOW_IN_PLOT_METRICS = 10 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
-
-INIT_ANGLES = [45, -2, -4, -8]    # initial angles (degrees)
-INIT_VELOCITIES = [100, 2_000, 4_000, 8_000] # initial velocities (m/s)
-
-CAPSULE_DRAG_COEFFICIENT = 1.2      # drag coefficient to use in the simulation
-CAPSULE_LIFT_COEFFICIENT = 1        # lift coefficient to use in the simulation
-
-PARACHUTE_DRAG_COEFFICIENT = 1      # drag coefficient to use in the simulation
-                                       
-
-######################################################################
-#      RUN THE "main" SCRIPTS TO SIMULATE THE CHOOSEN OPTIONS        #
-######################################################################
-
-
-
 
 
 
