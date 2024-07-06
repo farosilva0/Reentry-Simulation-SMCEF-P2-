@@ -7,7 +7,7 @@ from scipy.interpolate import CubicSpline
 '''CHOOSE SIMULATION OPTIONS'''
 
 # 1. Choose the simulation to run from options below:
-SIM_TO_RUN = 2
+SIM_TO_RUN = 1
 #------------------------
 REENTRY_SIM = 1
 PROJECTILE_SIM = 2          # simulation of a projectile being launched with different angles and velocities
@@ -17,7 +17,7 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 # 2. Choose type of simulation from options below:
 SIM_TYPE = 1
 #------------------------
-NORMAL_SIM = 1
+NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
 HORIZONTAL_SIM = 2              # we'll start the simulation with some velocity and angle 0, and no forces, so the altitude will remain the same even in round earth
 VERTICAL_SIM = 3                # we'll start the simulation without velocity, so with forces object will move vertically
                                 # For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
@@ -27,12 +27,12 @@ ESCAPE_VEL_SIM = 5              # we'll start the simulation with the escape vel
 
 
 # 3. Choose more options:
-ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
+ROUND_EARTH = True                  # if True we'll simulate the reentry in a round Earth
 
-DRAG_COEFFICIENT = 0      # drag coefficient to use in the simulation
-LIFT_COEFFICIENT = 0        # lift coefficient to use in the simulation
+DRAG_COEFFICIENT = 1.2      # drag coefficient to use in the simulation
+LIFT_COEFFICIENT = 1        # lift coefficient to use in the simulation
 
-LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
+LIFT_PERPENDICULAR_TO_VELOCITY = True  # if False, all lift force will be added to y component regardless of velocity direction
                                         # if True, lift force will be perpendicular to velocity direction, and always pointing up
                                         
 CONSTANT_GRAVITY = False            # if True we'll use constant values for gravity
@@ -43,8 +43,8 @@ SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with dep
 SHOW_DETAILS = True
 # TODO: correr com SHOW_DETAILS = False e ver se os resultados são os mesmos, e se não são, ver o que está a ser mostrado que não devia ser mostrado
 
-dt = 0.01                        # time steps (s)
-SIM_MAX_TIME = 60 * 30            # max time for the simulation (s)
+dt = 0.001                        # time steps (s)
+SIM_MAX_TIME = 60 * 15            # max time for the simulation (s)
 
 SIMS_TO_SHOW_IN_PLOT_METRICS = 10 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
 
@@ -69,12 +69,12 @@ RADIUS_EARTH = 6.371e6          # Earth radius (m)
 
 X_0 = 0                                                          # Initial x position (m)
 ALTITUDE_0 = 130_000                                               # "interface" == Initial altitude (m)
-INIT_ANGLES = np.negative(np.arange(start=0, stop=15.1, step=2))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
-INIT_VELOCITIES = np.arange(start=0, stop=15_001, step=2_000)    # Possible Initial velocities (m/s)
+INIT_ANGLES = [-0, -2, -4, -8] #np.negative(np.arange(start=0, stop=15.1, step=2))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+INIT_VELOCITIES = [0, 2_000, 4_000, 8_000] #np.arange(start=0, stop=15_001, step=2_000)    # Possible Initial velocities (m/s)
 if ROUND_EARTH:
-    dt = 0.0001
-    INIT_ANGLES = [0, 2, 4, 8, 12, 15]
-    INIT_VELOCITIES = [0, 2_000, 4_000, 6_000, 8_000, 10_000, 15_000]
+    dt = 0.001
+    INIT_ANGLES = [0, 2, 4] # TODO: ver na round earth se angulo inicial é negativo... começa a subir???
+    INIT_VELOCITIES = [0, 2_000]
 if SIM_TYPE == HORIZONTAL_SIM:
     SIM_MAX_TIME = 20
     INIT_VELOCITIES = [10]  
@@ -204,7 +204,8 @@ def run_entry_simulation(angle_0, v_0, altitude_0 = ALTITUDE_0, x_0 = X_0):
     '''runs a simulation of the capsule reentry'''
     if SHOW_DETAILS:
         print("\nsimulation:  path_angle: ", angle_0, "   init velocity: ", v_0, "   altitude: ", altitude_0, "   x_0: ", x_0)
-    # metrics to store
+    # metrics to st
+    # ore
     times = []
     path_x = [] # we discard initial values for simplicity (because we don't know initial values of other metrics like acceleration)
     path_y = []
@@ -351,8 +352,9 @@ def main():
                 sim_number += 1
     if SHOW_DETAILS:
         plot.end_sims_metrics_plot()
-    # plot.plot_reentry_conditions(acceleration_pairs, velocity_pairs, distance_pairs)
-    plot.plot_reentry_parameters(successful_pairs)
+    if SIM_TO_RUN == REENTRY_SIM:
+        # plot.plot_reentry_conditions(acceleration_pairs, velocity_pairs, distance_pairs)
+        plot.plot_reentry_parameters(successful_pairs)
 
 
 
