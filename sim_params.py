@@ -19,7 +19,7 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 
 
 ''' 2. Choose type of simulation from options below: '''
-SIM_TYPE = 3
+SIM_TYPE = 2
 #------------------------
 NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
 NORMAL_SIM_BUT_LESS_PAIRS = 2  # we'll start simulation for less angles and velocities
@@ -78,7 +78,8 @@ INIT_VELOCITY = 'init_velocity'
 TIMES = 'times'
 PATH_X = 'path_x'
 PATH_Y = 'path_y'
-VELOCITIES = 'velocities'
+ABS_VELOCITIES = 'velocities'
+Y_VELOCITIES = 'y_velocities'
 ACCELERATIONS = 'accelerations'
 CHUTE_OPENING = 'chute_opening'
 
@@ -106,7 +107,7 @@ class Params:
         self.show_details = True
         self.sims_to_show_in_plot_metrics = 10
         self.is_reentry_sim = SIM_TO_RUN == REENTRY_SIM
-        
+        self.sim_with_parachute = SIM_WITH_PARACHUTE        
 
         # Initial conditions
         self.x_0 = 0

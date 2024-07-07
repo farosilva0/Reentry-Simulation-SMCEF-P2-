@@ -20,7 +20,7 @@ def get_jacobian_matrix(Sk, p: Params):
     return np.array([[0, 0, 1, 0],  # dx/dt
                      [0, 0, 0, 1],  # dy/dt
                      [0, 0, 0, 0],  # dvx/dt
-                     [0, 0, 0, 0]]) # dvy/dt
+                     [0, 0, 0, -9.8]]) # dvy/dt
      
 
 

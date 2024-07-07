@@ -37,7 +37,10 @@ def get_acceleration(Sk, Mk, p: Params):
     
     x, y, vx, vy = Sk
     v, a, acc_horiz_dist, chute_open = Mk   
-   
+    
+    v = 1e-20 if v == 0 else v
+    y = 1e-20 if y == 0 else y
+
     air_density = get_air_density_cubic_spline(y - RADIUS_EARTH)
     F_air_drag = -0.5 * p.capsule_surface_area * air_density * p.capsule_drag_coefficient * v**2
     v_mass = v * p.capsule_mass
@@ -108,9 +111,6 @@ def run_one_simulation(S0, M0, p: Params, method_f):
         if S[i][Y] < RADIUS_EARTH:
             print(f"Landed:  M: ", M[i])
             return S[:i+1], M[:i+1], t[:i+1]
-        # if M[ACC_EARTH_ANGLE] > p.max_horizontal_distance + 5_000:
-        #     print(f"Landed after: S[{i}]: ", S[i])
-        #     return S[:i+1], M[:i+1], t[:i+1]
     print(f"Time out: S: ", S[i], "  M: ", M[i])
     return S, M, t
 
@@ -128,9 +128,9 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
     print("\n"*20, "Running simulations with parameters: \n", p)
 
     if p.show_details:
-        sims_to_show = min(p.sims_to_show_in_plot_metrics, len(p.init_angles) * len(p.init_velocities))
-        axs = plot.start_sims_metrics_plot(p.is_reentry_sim, sims_to_show)
-        random_sim_to_show = np.random.choice(len(p.init_angles) * len(p.init_velocities), size=sims_to_show, replace=False)
+        total_sims_to_show = min(p.sims_to_show_in_plot_metrics, len(p.init_angles) * len(p.init_velocities))
+        axs = plot.start_sims_metrics_plot(p, total_sims_to_show)
+        sims_to_show = np.random.choice(len(p.init_angles) * len(p.init_velocities), size=total_sims_to_show, replace=False)
     sim_number = 0
     for angle_0 in p.init_angles:
         for v_0 in p.init_velocities:
@@ -162,23 +162,24 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
             else:
                 successful_pairs.append((angle_0, v_0))
             if p.show_details:
-                if sim_number in random_sim_to_show:
+                if sim_number in sims_to_show:
                     sim_metrics = {
                         INIT_ANGLE: angle_0,
                         INIT_VELOCITY: v_0,
                         PATH_X: S[1:, X],
                         PATH_Y: S[1:, Y] - RADIUS_EARTH,
-                        VELOCITIES: M[1:, V],
+                        ABS_VELOCITIES: M[1:, V],
+                        Y_VELOCITIES: S[1:, VY],
                         ACCELERATIONS: M[1:, A],
                         CHUTE_OPENING: M[1:, CHUTE_OPEN],
                         TIMES: t[1:]
                     }
-                    plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)
+                    plot.plot_sim_metrics(axs, sim_metrics, p.is_reentry_sim, p)
                 sim_number += 1
     if p.show_details:
-        plot.end_sims_metrics_plot()
+        plot.end_sims_metrics_plot(axs, p)
     if p.is_reentry_sim:
-        plot.plot_success_reentries(successful_pairs)
+        # plot.plot_success_reentries(successful_pairs)
         plot.plot_all_reentrys(successful_pairs, acceleration_pairs, velocity_pairs, landed_before, landed_after)
     
 

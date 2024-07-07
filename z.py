@@ -47,6 +47,8 @@ plt.figure(figsize=(8, 6))
 plt.plot(S[:, 0], S[:, 1], label='Projectile Trajectory')
 plt.scatter(S[crossing_index, 0], S[crossing_index, 1], color='red', marker='o', label='Crossing Point (y = 0)')
 
+plt.axvline(x=10, color='gray', linestyle='--', label='Vertical Line at x = 10')
+
 plt.xlabel('Horizontal Distance (m)')
 plt.ylabel('Altitude (m)')
 plt.title('Projectile Motion Simulation')

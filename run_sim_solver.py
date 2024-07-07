@@ -12,7 +12,7 @@ def solve_ivp_sim(t, Y0):
         args: Y0 = initial state vector [x, y, vx, vy] '''
     x, y, vx, vy, = Y0
     v = np.sqrt(vx**2 + vy**2)
-    Mk = np.array([v, 0, 0])  # [v, a, acc_horiz_dist]
+    Mk = np.array([v, 0, 0, 0])  # [v, a, acc_horiz_dist]
     ax, ay, Mk = acceleration_f(Y0, Mk, params)
     return [vx, vy, ax, ay]
 
@@ -35,15 +35,15 @@ def solver_ivp (Sk, Mk, p: Params, get_acceleration_f):
     event_conditions.terminal = True  # Stop the integration when this event occurs
     event_conditions.direction = -1   # Look for a decreasing y position
 
-    sol1 = solve_ivp(
+    sol = solve_ivp(
                 solve_ivp_sim,                      # function that defines the system of ODEs
                 [0, size],                          # time span
                 y0=[Sk[X], Sk[Y], Sk[VX], Sk[VY]],  # initial state vector 
                 t_eval=t,                           # time points to evaluate the solution
                 events=event_conditions,            # stop condition
                 dense_output=True)  
-    t = sol1.t
-    S = sol1.y.T
+    t = sol.t
+    S = sol.y.T
     M = np.zeros((len(t), Mk.shape[0]), dtype=float)
     # TODO: fazer V e ACC vectorized pra ser mais eficiente com numpy do que nos loops 
     M[:, V] = np.sqrt(S[:, VX]**2 + S[:, VY]**2)
