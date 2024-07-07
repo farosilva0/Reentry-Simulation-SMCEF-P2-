@@ -11,7 +11,7 @@ from run_various_sims import *
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 1
+SIM_TO_RUN = 2
 #------------------------
 REENTRY_SIM = 1
 PROJECTILE_SIM = 2          # simulation of a projectile being launched with different angles and velocities
@@ -19,7 +19,7 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 
 
 ''' 2. Choose type of simulation from options below: '''
-SIM_TYPE = 2
+SIM_TYPE = 1
 #------------------------
 NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
 NORMAL_SIM_BUT_LESS_PAIRS = 2  # we'll start simulation for less angles and velocities
@@ -89,7 +89,7 @@ X, Y, VX, VY = 0, 1, 2, 3
 
 
 ''' Other System Metrics. (indices in the Metrics vector)'''
-V, A, ACC_HORIZ_DIST = 0, 1, 2
+V, A, ACC_EARTH_ANGLE = 0, 1, 2
 
 
 

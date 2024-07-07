@@ -106,7 +106,7 @@ def run_one_simulation(S0, M0, p: Params, method_f):
         if S[i][Y] < RADIUS_EARTH:
             print(f"Landed:  M: ", M[i])
             return S[:i+1], M[:i+1], t[:i+1]
-        # if M[ACC_HORIZ_DIST] > p.max_horizontal_distance + 5_000:
+        # if M[ACC_EARTH_ANGLE] > p.max_horizontal_distance + 5_000:
         #     print(f"Landed after: S[{i}]: ", S[i])
         #     return S[:i+1], M[:i+1], t[:i+1]
     print(f"Time out: S: ", S[i], "  M: ", M[i])
@@ -139,19 +139,21 @@ def run_all_simulations(method_f):
 
             # S b= [X, Y, VX, VY]
             S0 = np.array([p.x_0, p.altitude_0 + RADIUS_EARTH, vx, vy])
-            # M = [V, A, ACC_HORIZ_DIST]
+            # M = [V, A, ACC_EARTH_ANGLE]
             M0 = np.array([v_0, 0, 0])  
 
             S, M, t = run_one_simulation(S0, M0, p, method_f)
-            acc_angle = M[-1][ACC_HORIZ_DIST] * RADIUS_EARTH
+            acc_horiz_dist = M[-1][ACC_EARTH_ANGLE] * RADIUS_EARTH
             # TODO: earth_angle ver se a formula direta dá o mesmo angulo e se sim não é preciso ir contando a cada passo 
+            earth_angle = np.radians(90) - np.arctan2(S[-1, Y], (S[-1, X] - p.x_0)) # angle in origin from y axis to current position
+            print("acc_angle: ", round(M[-1][ACC_EARTH_ANGLE],3), "  earth_angle: ", round(earth_angle, 3), "  diff horiz dist: ", (M[-1][ACC_EARTH_ANGLE] - earth_angle) * RADIUS_EARTH)
             if np.any(M[:,A] > p.max_acceleration):
                 acceleration_pairs.append((angle_0, v_0))
             elif M[-1][V] > p.max_landing_velocity:
                 velocity_pairs.append((angle_0, v_0))
-            elif acc_angle < p.min_horizontal_distance:
+            elif acc_horiz_dist < p.min_horizontal_distance:
                 landed_before.append((angle_0, v_0))
-            elif acc_angle > p.max_horizontal_distance:
+            elif acc_horiz_dist > p.max_horizontal_distance:
                 landed_after.append((angle_0, v_0))
             else:
                 successful_pairs.append((angle_0, v_0))

@@ -11,7 +11,7 @@ def forward_euler_step(Sk, Mk, p: Params, slope_f):
     slopes, Mk1 = slope_f(Sk, Mk, p)
     Sk1 = Sk + slopes * p.dt
     Mk1[V] = np.sqrt(Sk1[VX]**2 + Sk1[VY]**2)
-    Mk1[ACC_HORIZ_DIST] = Mk[ACC_HORIZ_DIST] + (Sk1[X] - Sk[X]) / Sk1[Y]
+    Mk1[ACC_EARTH_ANGLE] = Mk[ACC_EARTH_ANGLE] + (Sk1[X] - Sk[X]) / Sk1[Y]
     return Sk1, Mk1
 
 
