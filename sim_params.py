@@ -11,7 +11,7 @@ from run_various_sims import *
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 2
+SIM_TO_RUN = 1
 #------------------------
 REENTRY_SIM = 1
 PROJECTILE_SIM = 2          # simulation of a projectile being launched with different angles and velocities
@@ -19,11 +19,10 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 
 
 ''' 2. Choose type of simulation from options below: '''
-SIM_TYPE = 1
+SIM_TYPE = 2
 #------------------------
 NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
 NORMAL_SIM_BUT_LESS_PAIRS = 2  # we'll start simulation for less angles and velocities
-HORIZONTAL_SIM = 3              # we'll start the simulation with some velocity and angle 0, and no forces, so the altitude will remain the same even in round earth
 VERTICAL_SIM = 4                # we'll start the simulation without velocity, so with forces object will move vertically
                                 # For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
 ORBITAL_VEL_SIM = 5             # we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
@@ -173,17 +172,17 @@ def get_params():
         if SIM_TYPE == NORMAL_SIM:
             return correct_exception_params(p)
         elif SIM_TYPE == NORMAL_SIM_BUT_LESS_PAIRS:
-            p.init_angles = [0, -8, -12, -16, -30, -50]
-            p.init_velocities = [0, 2_000, 4_000, 8_000, 15_000]
+            p.init_angles = [-8, -16, -32]
+            p.init_velocities = [0, 6_000, 15_000]
             return correct_exception_params(p)
     if SIM_TO_RUN == PROJECTILE_SIM:
         if SIM_TYPE == NORMAL_SIM:
             p.altitude_0 = 0
             p.init_angles = [30, 45, 60]
-            p.init_velocities = [100]
+            p.init_velocities = [1000]
             p.capsule_mass = 1
             p.capsule_surface_area = 1
-            p.capsule_drag_coefficient = 0
+            p.capsule_drag_coefficient = 0.01
             p.capsule_lift_coefficient = 0
             p.parachute_drag_coefficient = 0
             return correct_exception_params(p)

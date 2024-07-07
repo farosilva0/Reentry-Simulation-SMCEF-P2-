@@ -67,6 +67,7 @@ def get_acceleration(Sk, Mk, p: Params):
     # print("F_g:               ", round(g, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2), "  a:", round(np.sqrt(ax**2 + ay**2), 2), "  a_without_G:", round(Mk[A], 2))
     return ax, ay, Mk
 
+    
 
 def reentry_slope(Sk, Mk, p:Params):
     ''' given the previous state (Sk), returns the derivatives (ODEs) for each variable of the System [x, y, vx, vy]
@@ -114,7 +115,7 @@ def run_one_simulation(S0, M0, p: Params, method_f):
 
 
 
-def run_all_simulations(method_f):
+def run_all_simulations(method_f, run_with_solver_ivp=False):
 
     successful_pairs = []
     acceleration_pairs = []
@@ -141,8 +142,10 @@ def run_all_simulations(method_f):
             S0 = np.array([p.x_0, p.altitude_0 + RADIUS_EARTH, vx, vy])
             # M = [V, A, ACC_EARTH_ANGLE]
             M0 = np.array([v_0, 0, 0])  
-
-            S, M, t = run_one_simulation(S0, M0, p, method_f)
+            if run_with_solver_ivp: 
+                S, M, t = method_f(S0, M0, p, get_acceleration)
+            else:
+                S, M, t = run_one_simulation(S0, M0, p, method_f)
             acc_horiz_dist = M[-1][ACC_EARTH_ANGLE] * RADIUS_EARTH
             # TODO: earth_angle ver se a formula direta dá o mesmo angulo e se sim não é preciso ir contando a cada passo 
             earth_angle = np.radians(90) - np.arctan2(S[-1, Y], (S[-1, X] - p.x_0)) # angle in origin from y axis to current position

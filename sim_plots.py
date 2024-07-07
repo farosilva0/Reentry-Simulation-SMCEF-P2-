@@ -86,7 +86,7 @@ def plot_sim_metrics(axs, sim_metrics, is_reentry_sim):
     dist_label = f'Distance (m)'
     alt_label = f'Altitude (m)'      
     vel_label = f'Velocity (m/s)'
-    acc_label = f'Acceleration (m/s^2)'
+    acc_label = f'Acceleration (without G) (m/s^2)'
     time_label = f'Time (s)'
 
     if SHOW_DETAILS:
