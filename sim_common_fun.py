@@ -36,7 +36,7 @@ def get_acceleration(Sk, Mk, p: Params):
         Updates metrics (M) with the total acceleration in the current state, without counting gravity aceleration.'''
     
     x, y, vx, vy = Sk
-    v, a, acc_horiz_dist = Mk   
+    v, a, acc_horiz_dist, chute_open = Mk   
    
     air_density = get_air_density_cubic_spline(y - RADIUS_EARTH)
     F_air_drag = -0.5 * p.capsule_surface_area * air_density * p.capsule_drag_coefficient * v**2
@@ -53,6 +53,7 @@ def get_acceleration(Sk, Mk, p: Params):
         ax += F_air_drag_parachute * vx / v_mass
         ay += F_air_drag_parachute * vy / v_mass
         F_lift = 0
+        Mk[CHUTE_OPEN] = 1
         # print("F_drag_parachute: ", round(F_air_drag_parachute, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
     else:
         F_lift = - 0.5 * p.capsule_surface_area * air_density * p.capsule_lift_coefficient * v**2
@@ -141,7 +142,7 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
             # S b= [X, Y, VX, VY]
             S0 = np.array([p.x_0, p.altitude_0 + RADIUS_EARTH, vx, vy])
             # M = [V, A, ACC_EARTH_ANGLE]
-            M0 = np.array([v_0, 0, 0])  
+            M0 = np.array([v_0, 0, 0, 0])  
             if run_with_solver_ivp: 
                 S, M, t = method_f(S0, M0, p, get_acceleration)
             else:
@@ -169,6 +170,7 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
                         PATH_Y: S[1:, Y] - RADIUS_EARTH,
                         VELOCITIES: M[1:, V],
                         ACCELERATIONS: M[1:, A],
+                        CHUTE_OPENING: M[1:, CHUTE_OPEN],
                         TIMES: t[1:]
                     }
                     plot.plot_sim_metrics(axs, sim_metrics, SIM_TO_RUN == REENTRY_SIM)
@@ -176,7 +178,7 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
     if p.show_details:
         plot.end_sims_metrics_plot()
     if p.is_reentry_sim:
-        plot.plot_reentry_parameters(successful_pairs)
+        plot.plot_success_reentries(successful_pairs)
         plot.plot_all_reentrys(successful_pairs, acceleration_pairs, velocity_pairs, landed_before, landed_after)
     
 

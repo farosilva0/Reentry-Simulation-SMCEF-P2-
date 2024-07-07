@@ -19,14 +19,14 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 
 
 ''' 2. Choose type of simulation from options below: '''
-SIM_TYPE = 2
+SIM_TYPE = 3
 #------------------------
 NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
 NORMAL_SIM_BUT_LESS_PAIRS = 2  # we'll start simulation for less angles and velocities
-VERTICAL_SIM = 4                # we'll start the simulation without velocity, so with forces object will move vertically
-                                # For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
-ORBITAL_VEL_SIM = 5             # we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
-ESCAPE_VEL_SIM = 6              # we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
+VERTICAL_SIM = 3                # we'll start the simulation without velocity, so with forces object will move vertically
+                                # TODO: If Lift = TRUE ->  For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
+ORBITAL_VEL_SIM = 4             # we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
+ESCAPE_VEL_SIM = 5              # we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
 #------------------------
 
 
@@ -35,7 +35,7 @@ ESCAPE_VEL_SIM = 6              # we'll start the simulation with the escape vel
 CONSTANT_GRAVITY = True            # if True we'll use constant values for gravity
 CONSTANT_AIR_DENSITY = True        # if True we'll use constant values for air density
 
-SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
+SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
 ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
 
@@ -80,6 +80,7 @@ PATH_X = 'path_x'
 PATH_Y = 'path_y'
 VELOCITIES = 'velocities'
 ACCELERATIONS = 'accelerations'
+CHUTE_OPENING = 'chute_opening'
 
 
 ''' System variables (indices in the System vector)  
@@ -88,7 +89,7 @@ X, Y, VX, VY = 0, 1, 2, 3
 
 
 ''' Other System Metrics. (indices in the Metrics vector)'''
-V, A, ACC_EARTH_ANGLE = 0, 1, 2
+V, A, ACC_EARTH_ANGLE, CHUTE_OPEN = 0, 1, 2, 3
 
 
 
@@ -175,6 +176,23 @@ def get_params():
             p.init_angles = [-8, -16, -32]
             p.init_velocities = [0, 6_000, 15_000]
             return correct_exception_params(p)
+        elif SIM_TYPE == VERTICAL_SIM:
+            p.init_angles = [90]
+            p.init_velocities = [0]
+            return correct_exception_params(p)
+
+
+        # SIM_TYPE = 2
+        # #------------------------
+        # NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
+        # NORMAL_SIM_BUT_LESS_PAIRS = 2  # we'll start simulation for less angles and velocities
+        # VERTICAL_SIM = 4                # we'll start the simulation without velocity, so with forces object will move vertically
+        #                                 # For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
+        # ORBITAL_VEL_SIM = 5             # we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
+        # ESCAPE_VEL_SIM = 6              # we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
+        # #------------------------
+
+
     if SIM_TO_RUN == PROJECTILE_SIM:
         if SIM_TYPE == NORMAL_SIM:
             p.altitude_0 = 0

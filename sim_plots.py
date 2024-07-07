@@ -23,7 +23,7 @@ def plot_air_density(f):
 
 ############################################################################################################
 
-def plot_reentry_parameters(pairs):
+def plot_success_reentries(pairs):
     '''plot the parameter values that bound valid reentry solutions'''
     fig, ax = plt.subplots(figsize=(12, 8))
     fig.subplots_adjust(left=0.05, bottom=0.06, right=0.95, top=0.96)
@@ -32,7 +32,7 @@ def plot_reentry_parameters(pairs):
     ax.set_xlabel('initial velocity (m/s)')
     ax.set_ylabel('downward angle (º)')
     ax.legend()
-    title = 'Reentry Parameters'
+    title = 'Successful Reentry Parameters'
     if len(pairs) == 0:
         ax.legend('No valid reentry solutions found.')
     plt.title(title)
@@ -55,7 +55,7 @@ def plot_all_reentrys(success, accel, vel, before, after):
     ax.set_xlabel('initial velocity (m/s)')
     ax.set_ylabel('downward angle (º)')
     ax.legend()
-    title = 'Reentry Parameters'
+    title = 'Reentry Parameters Conditions'
     if len(success) == 0:
         ax.legend('No valid reentry solutions found.')
     plt.title(title)
@@ -71,9 +71,11 @@ def start_sims_metrics_plot(is_reentry_sim, number_of_plots_to_show):
     fig.suptitle(('Reentry' if is_reentry_sim else 'Projectile') + f' simulation. Showing {number_of_plots_to_show} random plots', fontsize=10)
     return axs
 
-def plot_metric(ax, x, x_label, y, y_label, init_values_lable):
+def plot_metric(ax, x, x_label, y, y_label, init_values_lable, chute_open_idx = None):
     '''plot a metric'''
     ax.plot(x, y, label=init_values_lable) 
+    if chute_open_idx is not None:
+        ax.scatter(x[chute_open_idx], y[chute_open_idx], color='red', marker='o', label='Chute Open')
     ax.legend(fontsize=6) 
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
@@ -92,25 +94,27 @@ def plot_sim_metrics(axs, sim_metrics, is_reentry_sim):
     if SHOW_DETAILS:
      
         init_values_lable = f'ang {sim[INIT_ANGLE]:.0f}, vel {sim[INIT_VELOCITY]:.0f},   '
-        
+        chute_open_idx = (np.argmax(sim[CHUTE_OPENING] > 0) - 1) if SIM_WITH_PARACHUTE else None
+        print(f'chute_open_idx: {chute_open_idx}')
+        print(len(sim[CHUTE_OPENING]))
         # Path (x=distance, y=altitude) 
         x_comp_label = f'x({min(sim[PATH_X]):.0f} / {max(sim[PATH_X]):.0f})'
         y_comp_label = ""  if is_reentry_sim else  f', y({min(sim[PATH_Y]):.0f} / {max(sim[PATH_Y]):.0f})'
-        plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + x_comp_label + y_comp_label) 
+        plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + x_comp_label + y_comp_label, chute_open_idx) 
         
         # x=Altitude vs y=Velocity
         vel_comp_label = f'vel({min(sim[VELOCITIES]):.0f} / {max(sim[VELOCITIES]):.0f})'
-        plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label)
+        plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label, chute_open_idx)
                     
         # x=Time vs y=Velocity
-        plot_metric(axs[1,1], sim[TIMES], time_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label)
+        plot_metric(axs[1,1], sim[TIMES], time_label, sim[VELOCITIES], vel_label, init_values_lable + vel_comp_label, chute_open_idx)
 
         # x=Altitude vs y=Acceleration
         acc_comp_label = f'acc({min(sim[ACCELERATIONS]):.0f} / {max(sim[ACCELERATIONS]):.0f})'
-        plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label)
+        plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, chute_open_idx)
 
         # x=Time vs y=Acceleration
-        plot_metric(axs[1,2], sim[TIMES], time_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label)          
+        plot_metric(axs[1,2], sim[TIMES], time_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, chute_open_idx)          
         
 def end_sims_metrics_plot():
     plt.tight_layout()
