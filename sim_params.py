@@ -11,7 +11,7 @@ from run_various_sims import *
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 2
+SIM_TO_RUN = 1
 #------------------------
 REENTRY_SIM = 1
 PROJECTILE_SIM = 2          # simulation of a projectile being launched with different angles and velocities
@@ -19,10 +19,10 @@ PROJECTILE_SIM = 2          # simulation of a projectile being launched with dif
 
 
 ''' 2. Choose type of simulation from options below: '''
-SIM_TYPE = 1
+SIM_TYPE = 2
 #------------------------
 NORMAL_SIM = 1                  # we'll start simulation for several angles and velocities
-NORMAL_SIM_WITH_LESS_PAIS = 2   # we'll start simulation for less angles and velocities
+NORMAL_SIM_BUT_LESS_PAIRS = 2  # we'll start simulation for less angles and velocities
 HORIZONTAL_SIM = 3              # we'll start the simulation with some velocity and angle 0, and no forces, so the altitude will remain the same even in round earth
 VERTICAL_SIM = 4                # we'll start the simulation without velocity, so with forces object will move vertically
                                 # For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
@@ -109,10 +109,10 @@ class Params:
         
 
         # Initial conditions
-        self._x_0 = 0
-        self._altitude_0 = 130_000
-        self._init_angles = np.negative(np.arange(start=0, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
-        self._init_velocities = np.arange(start=0, stop=15_001, step=300)    # Possible Initial velocities (m/s)
+        self.x_0 = 0
+        self.altitude_0 = 130_000
+        self.init_angles = np.negative(np.arange(start=0, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+        self.init_velocities = np.arange(start=0, stop=15_001, step=300)    # Possible Initial velocities (m/s)
 
         # Capsule parameters
         self.capsule_mass = 12_000
@@ -157,21 +157,35 @@ class Params:
                f"sims_to_show_in_plot_metrics = {self.sims_to_show_in_plot_metrics}\n"
 
 
+def correct_exception_params(p: Params):
+    #TODO: verificar as formulas e ver se dá pra não dividir pela velocidade 
+    for i, vel in enumerate(p.init_velocities):
+        if vel == 0:
+            p.init_velocities[i] = 0.000001
+    if p.capsule_mass == 0:
+        p.capsule_mass = 0.000001
+    return p
+
 
 def get_params():
     p = Params()
     if SIM_TO_RUN == REENTRY_SIM:
         if SIM_TYPE == NORMAL_SIM:
-            return Params()
+            return correct_exception_params(p)
+        elif SIM_TYPE == NORMAL_SIM_BUT_LESS_PAIRS:
+            p.init_angles = [0, -8, -12, -16, -30, -50]
+            p.init_velocities = [0, 2_000, 4_000, 8_000, 15_000]
+            return correct_exception_params(p)
     if SIM_TO_RUN == PROJECTILE_SIM:
         if SIM_TYPE == NORMAL_SIM:
             p.altitude_0 = 0
-            p.init_angles = [30,45,60]
+            p.init_angles = [30, 45, 60]
             p.init_velocities = [100]
             p.capsule_mass = 1
             p.capsule_surface_area = 1
             p.capsule_drag_coefficient = 0
             p.capsule_lift_coefficient = 0
-            return p
+            p.parachute_drag_coefficient = 0
+            return correct_exception_params(p)
         
 

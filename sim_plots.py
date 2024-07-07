@@ -47,9 +47,9 @@ def plot_all_reentrys(success, accel, vel, before, after):
     for angle, velocity in accel:
         ax.plot(velocity, -angle,'-o', color='r', label ='over accel' if angle == accel[0][0] and velocity == accel[0][1] else '')
     for angle, velocity in vel:
-        ax.plot(velocity, -angle,'-o', color='blueviolet', label ='over speed' if angle == vel[0][0] and velocity == vel[0][1] else '')
+        ax.plot(velocity, -angle,'-o', color='pink', label ='over speed' if angle == vel[0][0] and velocity == vel[0][1] else '')
     for angle, velocity in before:
-        ax.plot(velocity, -angle,'-o', color='pink', label ='landed before' if angle == before[0][0] and velocity == before[0][1] else '')
+        ax.plot(velocity, -angle,'-o', color='blueviolet', label ='landed before' if angle == before[0][0] and velocity == before[0][1] else '')
     for angle, velocity in after:
         ax.plot(velocity, -angle,'-o', color='b', label ='landed after' if angle == after[0][0] and velocity == after[0][1] else '')
     ax.set_xlabel('initial velocity (m/s)')
