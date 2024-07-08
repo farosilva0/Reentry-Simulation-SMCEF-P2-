@@ -116,11 +116,6 @@ from sim_params import *
 #     return x, y
 
 
-# def get_air_density_cubic_spline(y):
-#     altitude = y - RADIUS_EARTH
-#     result = f(altitude)
-#     return result if result > 0.0 else 0.0
-
 
 # def get_total_acceleration(y, vx, vy):
 #     '''calculates the total acceleration on the capsule, which depends if the parachutes are deployed or not.'''

@@ -9,11 +9,14 @@ def forward_euler_step(Sk, Mk, p: Params, slope_f):
         Given previous state (Sk) and metrics (Mk), calculates the current state (Sk + 1) and metrics (Mk +1).
         returns Sk1 as a new vector by value, not altering the original Sk.'''
     slopes, Mk1 = slope_f(Sk, Mk, p)
-    Sk1 = Sk + slopes * p.dt
-    # Mk1[A] was already calculated in get_acceleration function
-    # Mk1[CHUTE_OPEN] was already calculated in get_acceleration function
+    steps = slopes * p.dt
+    Sk1 = Sk + steps
+    if p.sim_round_earth: 
+        Sk1[VX], Sk1[VY] = make_round_earth(Sk[VX], Sk[VY], steps[VX], steps[VY], Mk[EARTH_ANGLE])
+        
+    # Mk1[A] and Mk1[CHUTE_OPEN] were already calculated in get_acceleration function
     Mk1[V] = np.sqrt(Sk1[VX]**2 + Sk1[VY]**2)
-    Mk1[ACC_EARTH_ANGLE] = Mk[ACC_EARTH_ANGLE] + (Sk1[X] - Sk[X]) / Sk1[Y]
+    Mk1[EARTH_ANGLE] = Mk[EARTH_ANGLE] + (Sk1[X] - Sk[X]) / Sk1[Y]
     return Sk1, Mk1
 
 

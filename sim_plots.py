@@ -85,7 +85,7 @@ def plot_metric(ax, x, x_label, y, y_label, init_values_lable, chute_open_idx, p
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     # plot the parachute opening point (plot just the point and save the coordinates to plot the label later)
-    if chute_open_idx is not None and chute_open_idx < len(x):
+    if chute_open_idx > 0 and chute_open_idx < len(x):
         ax.scatter(x[chute_open_idx], y[chute_open_idx], color='green', marker='o', s=12)
         show_parachute_label = True 
     # plot the initial altitude (if it's a reentry simulation)
@@ -110,33 +110,31 @@ def plot_sim_metrics(axs, sim_metrics, is_reentry_sim, p: Params):
     acc_label = f'Acceleration (without G) (m/s^2)'
     time_label = f'Time (s)'
 
-    if SHOW_DETAILS:
-     
-        init_values_lable = f'ang {sim[INIT_ANGLE]:.0f}, vel {sim[INIT_VELOCITY]:.0f},   '
-        chute_open_idx = (np.argmax(sim[CHUTE_OPENING] > 0) - 1) if p.sim_with_parachute else None
-        
-        # Path (x=distance, y=altitude) 
-        x_comp_label = f'x({min(sim[PATH_X]):.0f} / {max(sim[PATH_X]):.0f})'
-        y_comp_label = ""  if is_reentry_sim else  f', y({min(sim[PATH_Y]):.0f} / {max(sim[PATH_Y]):.0f})'
-        plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + x_comp_label + y_comp_label, chute_open_idx, p, is_x_y_plot=True) 
-        
-        # x=Altitude vs y=Y_Velocity
-        yvel_comp_label = f'y_vel({min(sim[Y_VELOCITIES]):.0f} / {max(sim[Y_VELOCITIES]):.0f})'
-        plot_metric(axs[1,0], sim[PATH_Y], alt_label, sim[Y_VELOCITIES], y_vel_label, init_values_lable + yvel_comp_label, chute_open_idx, p, is_altitude_plot=True)
+    init_values_lable = f'ang {sim[INIT_ANGLE]:.1f}, vel {sim[INIT_VELOCITY]:.0f},   '
+    chute_open_idx = (np.argmax(sim[CHUTE_OPENING] > 0) - 1) if p.sim_with_parachute else -1
 
-        # x=Altitude vs y=Velocity
-        vel_comp_label = f'vel({min(sim[ABS_VELOCITIES]):.0f} / {max(sim[ABS_VELOCITIES]):.0f})'
-        plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[ABS_VELOCITIES], vel_label, init_values_lable + vel_comp_label, chute_open_idx, p, is_altitude_plot=True)
-                    
-        # x=Time vs y=Velocity
-        plot_metric(axs[1,1], sim[TIMES], time_label, sim[ABS_VELOCITIES], vel_label, init_values_lable + vel_comp_label, chute_open_idx, p)
+    # Path (x=distance, y=altitude) 
+    x_comp_label = f'x({min(sim[PATH_X]):.0f} / {max(sim[PATH_X]):.0f})'
+    y_comp_label = ""  if is_reentry_sim else  f', y({min(sim[PATH_Y]):.0f} / {max(sim[PATH_Y]):.0f})'
+    plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + x_comp_label + y_comp_label, chute_open_idx, p, is_x_y_plot=True) 
+    
+    # x=Altitude vs y=Y_Velocity
+    yvel_comp_label = f'y_vel({min(sim[Y_VELOCITIES]):.0f} / {max(sim[Y_VELOCITIES]):.0f})'
+    plot_metric(axs[1,0], sim[PATH_Y], alt_label, sim[Y_VELOCITIES], y_vel_label, init_values_lable + yvel_comp_label, chute_open_idx, p, is_altitude_plot=True)
 
-        # x=Altitude vs y=Acceleration
-        acc_comp_label = f'acc({min(sim[ACCELERATIONS]):.0f} / {max(sim[ACCELERATIONS]):.0f})'
-        plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, chute_open_idx, p)
+    # x=Altitude vs y=Velocity
+    vel_comp_label = f'vel({min(sim[ABS_VELOCITIES]):.0f} / {max(sim[ABS_VELOCITIES]):.0f})'
+    plot_metric(axs[0,1], sim[PATH_Y], alt_label, sim[ABS_VELOCITIES], vel_label, init_values_lable + vel_comp_label, chute_open_idx, p, is_altitude_plot=True)
+                
+    # x=Time vs y=Velocity
+    plot_metric(axs[1,1], sim[TIMES], time_label, sim[ABS_VELOCITIES], vel_label, init_values_lable + vel_comp_label, chute_open_idx, p)
 
-        # x=Time vs y=Acceleration
-        plot_metric(axs[1,2], sim[TIMES], time_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, chute_open_idx, p)          
+    # x=Altitude vs y=Acceleration
+    acc_comp_label = f'acc({min(sim[ACCELERATIONS]):.0f} / {max(sim[ACCELERATIONS]):.0f})'
+    plot_metric(axs[0,2], sim[PATH_Y], alt_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, chute_open_idx, p)
+
+    # x=Time vs y=Acceleration
+    plot_metric(axs[1,2], sim[TIMES], time_label, sim[ACCELERATIONS], acc_label, init_values_lable + acc_comp_label, chute_open_idx, p)          
 
 
 def end_sims_metrics_plot(axs, p: Params): 
@@ -148,7 +146,7 @@ def end_sims_metrics_plot(axs, p: Params):
         if ax in [axs[0,2], axs[1,2]]:# plot max acceleration line 
             ax.axhline(y=p.max_acceleration, color='red', linestyle='--', label='max acceleration')
         if ax in [axs[1,0], axs[0,1], axs[0,2]]: # plots with altitude, invert y axis if reentry simulation and plot initial altitude
-            if p.is_reentry_sim:
+            if p.is_reentry_sim and not p.orbit_or_escape_vel_sim:
                 ax.invert_xaxis()
             ax.axvline(x=p.altitude_0, color='blue', linestyle='--', label='initial altitude')
         if ax == axs[0,0]: # plot landing boundaries in X_Y plot
@@ -160,6 +158,8 @@ def end_sims_metrics_plot(axs, p: Params):
         ax.legend(fontsize=6) 
         ax.tick_params(axis='both', which='major', labelsize=7)  # size of numbers on axis
         ax.ticklabel_format(useOffset=False, style='plain')      # avoid use of a base number shown on the side and scientific notation
+        ax.xaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
+        ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('%.0f'))
         ax.grid()
     plt.tight_layout()
     plt.show()

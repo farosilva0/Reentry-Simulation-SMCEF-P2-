@@ -45,7 +45,7 @@ def newton_backward_euler_step(Sk, Mk, p: Params, slope_f):
         Sk1 += delta
 
     Mk1[V] = np.sqrt(Sk1[VX]**2 + Sk1[VY]**2)
-    Mk1[ACC_EARTH_ANGLE] = Mk[ACC_EARTH_ANGLE] + (Sk1[X] - Sk[X]) / Sk1[Y]
+    Mk1[EARTH_ANGLE] = Mk[EARTH_ANGLE] + (Sk1[X] - Sk[X]) / Sk1[Y]
     print("Sk:", Sk, "\nSk1:", Sk1, "\nMk:", Mk, "\nMk1:", Mk1)
     print("Newton method finished")
     return Sk1, Mk1

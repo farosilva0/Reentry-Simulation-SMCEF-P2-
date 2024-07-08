@@ -52,7 +52,7 @@ def solver_ivp (Sk, Mk, p: Params, get_acceleration_f):
         ax, ay, Mk = get_acceleration_f(S[i], M[i], p)
         M[i, A] = Mk[A]
     for i in range(1, len(t)):
-        M[i, ACC_EARTH_ANGLE] = M[i-1, ACC_EARTH_ANGLE] + (S[i, X] - S[i-1, X]) / S[i, Y]
+        M[i, EARTH_ANGLE] = M[i-1, EARTH_ANGLE] + (S[i, X] - S[i-1, X]) / S[i, Y]
 
     return S, M, t
 
