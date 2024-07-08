@@ -3,11 +3,11 @@ import numpy as np
 
 ######################################################################
 #                   CHOOSE SIMULATION OPTIONS                        #
-# sim_params are set according with the choosen options bellow       #
+#   sim_params are set according with the choosen options bellow     #
 ######################################################################
 
-''' 0. Choose if you want to save plot images in folder "plot_images". '''
-SAVE_PLOT_IMAGES = True
+''' 1. Choose if you want to save plot images in folder "plot_images". '''
+SAVE_PLOT_IMAGES = False
 SIM_NAME_FOR_IMAGE = "implicit" 
 
 
@@ -16,18 +16,21 @@ SIM_TO_RUN = 2
 # --------------------------------------------------------------------
 # REENTRY_SIMULATION OPTIONS: 
 REENTRY_SIM_NORMAL = 1                  # we'll start simulation for several angles and velocities
-REENTRY_SIM_LESS_PAIRS = 2              # we'll start simulation for less angles and velocities
+REENTRY_SIM_CUSTOMIZED_PAIRS = 2        # we'll run the simulation with the angles and velocities choosen bellow
 REENTRY_SIM_VERTICAL_MOV = 3            # we'll start the simulation without velocity, so with forces object will move vertically
-                                        # If Lift = TRUE ->  For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
 REENTRY_SIM_HORIZONTAL_MOV = 4          # we'll start the simulation with horizontal angle and initial velocity, and forces will be 0
 REENTRY_SIM_ORBITAL_MOV = 5             # if with ROUND_EARTH = TRUE, we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
-REENTRY_SIM_ESCAPE_VEL_MOV = 6              # if with ROUND_EARTH = TRUE, we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
+REENTRY_SIM_ESCAPE_VEL_MOV = 6          # if with ROUND_EARTH = TRUE, we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
 # PROJECTILE_SIMULATION OPTIONS: 
 PROJECTILE_SIM = 7                      # we'll start simulation for several angles and velocities
 # --------------------------------------------------------------------
 
-
 ''' 2. Choose more options: '''
+
+# Pairs to run in REENTRY_SIM_CUSTOMIZED_PAIRS
+INIT_ANGLES = [-1, -2, -4, -8] #[ -8, -16]    # initial angles (degrees)
+INIT_VELOCITIES = [2_000, 4_000, 8_000] #, 12_000, 16_000] # initial velocities (m/s)
+
 SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
 LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
@@ -37,12 +40,7 @@ MAX_ANGLE_OF_ATTACK = 0                     # angle of attack in degrees (0 mean
 ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
 
 
-# -----> to use different init angles and velocities, set flag to true and choose them
-USE_CUSTOMIZED_INIT_VALUES = True
-INIT_ANGLES = [-4, -8, -12] #[ -8, -16]    # initial angles (degrees)
-INIT_VELOCITIES = [4_000, 8_000, 12_000, 16_000] #, 12_000, 16_000] # initial velocities (m/s)
-
-DT = 1                        # time steps (s)
+DT = 0.01                        # time steps (s)
 SIM_MAX_TIME = 60 * 30            # max time for the simulation (s)
 SIMS_TO_SHOW_IN_PLOT_METRICS = 12 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
 
@@ -50,7 +48,6 @@ CAPSULE_DRAG_COEFFICIENT = 1.2      # drag coefficient to use in the simulation
 CAPSULE_LIFT_COEFFICIENT = 1        # lift coefficient to use in the simulation
 
 PARACHUTE_DRAG_COEFFICIENT = 1      # drag coefficient to use in the simulation
-PARACHUTE_MAX_OPEN_ALTITUDE = 1_000 # maximum altitude to open the parachute
 
 NEWTON_EPSILON = 0.001   # for newton method (implicit) - to stop iterating when we find a "almost root" smaller than this value
 NEWTON_MAX_ITER = 100    # for newton method (implicit) - maximum number of iterations
@@ -133,7 +130,7 @@ class Params:
         # Parachute parameters
         self.parachute_surface_area = 301
         self.parachute_drag_coefficient = PARACHUTE_DRAG_COEFFICIENT
-        self.parachute_max_open_altitude = PARACHUTE_MAX_OPEN_ALTITUDE
+        self.parachute_max_open_altitude = 1_000
         self.parachute_max_open_velocity = 100
 
         # Parameter boundaries
@@ -173,9 +170,6 @@ class Params:
 def correct_exception_params(p: Params):
     if p.capsule_mass == 0:
         p.capsule_mass = 1e-20
-    if USE_CUSTOMIZED_INIT_VALUES: 
-        p.init_angles = INIT_ANGLES
-        p.init_velocities = INIT_VELOCITIES
     return p
 
 def orbital_velocity(altitude):
@@ -185,9 +179,9 @@ def get_params():
     p = Params()
     if SIM_TO_RUN == REENTRY_SIM_NORMAL:
         return correct_exception_params(p)
-    elif SIM_TO_RUN == REENTRY_SIM_LESS_PAIRS:
-        p.init_angles = [-2, -4, -12, -16]
-        p.init_velocities = [4_000, 8_000, 16_000] # with round earth we reduce speed to not escape to space
+    elif SIM_TO_RUN == REENTRY_SIM_CUSTOMIZED_PAIRS:
+        p.init_angles = INIT_ANGLES
+        p.init_velocities = INIT_VELOCITIES
         return correct_exception_params(p)
     elif SIM_TO_RUN == REENTRY_SIM_VERTICAL_MOV:
         p.x_0 = 100_000

@@ -11,8 +11,6 @@ def forward_euler_step(Sk, Mk, p: Params, slope_f):
     slopes, Mk1 = slope_f(Sk, Mk, p)
     steps = slopes * p.dt
     Sk1 = Sk + steps
-    if p.sim_round_earth: 
-        Sk1[VX], Sk1[VY] = make_round_earth(Sk[VX], Sk[VY], steps[VX], steps[VY], Mk[EARTH_ANGLE])
         
     # Mk1[A] and Mk1[CHUTE_OPEN] were already calculated in get_acceleration function
     Mk1[V] = np.sqrt(Sk1[VX]**2 + Sk1[VY]**2)

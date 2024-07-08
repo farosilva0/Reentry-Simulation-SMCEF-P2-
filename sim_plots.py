@@ -136,7 +136,7 @@ def plot_sim_metrics(axs, sim_metrics, angle_0, v_0, is_reentry_sim, p: Params):
 
 
     ''' Path plot '''
-    x_comp_label = f'x({min(sim[PATH_X]):.0f} / {max(sim[PATH_X]):.0f})'
+    x_comp_label = f'x({p.x_0:.0f} / {max(sim[PATH_X]):.0f})'
     y_comp_label = ""  if is_reentry_sim else  f', y({min(sim[PATH_Y]):.0f} / {max(sim[PATH_Y]):.0f})'    
     
     # x=distance, y=altitude

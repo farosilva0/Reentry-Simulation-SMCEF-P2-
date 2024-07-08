@@ -19,12 +19,11 @@ np.set_printoptions(suppress=True, precision=3)
 DENSITY_CSV = pd.read_csv('air_density.csv')                # Air density table
 ALTITUDE = DENSITY_CSV['altitude']                          # Altitude values
 AIR_DENSITY = DENSITY_CSV['air_density']                    # Air density values
+
+# air density interpolation
+# @Pre: the source document has a table with the air density values for each altitude until further distances in both directions, so we don't incur in errrs on the edges of the table
 air_dens_f = CubicSpline(ALTITUDE, AIR_DENSITY, bc_type='natural')   # Cubic spline interpolation for air density
 
-# TODO: apagar
-def get_air_density_cubic_spline(altitude):
-    result = air_dens_f(altitude)
-    return result if result > 0.0 else 0.0
 
 
 
@@ -32,13 +31,12 @@ def get_air_density_cubic_spline(altitude):
 #                                   SIMULATION 
 ############################################################################################################
 
-def make_round_earth (x, y, x_step, y_step, earth_angle):
-    ''' given x and y variables (e.g. velocities, or positions...),
-        and the step in each direction in the flat earth, and the earth angle (angle in origin from y axis to current position), 
-        converts flat steps to round earth steps and adds it to the x, y variables. '''
-    x += y_step * np.sin(earth_angle) + x_step * np.cos(earth_angle)  
-    y += y_step * np.cos(earth_angle) - x_step * np.sin(earth_angle)  # y_flat is decreasing because we are going down
-    return x, y
+def make_round_earth (x_flat_step, y_flat_step, earth_angle):
+    ''' given the step in each direction in the flat earth, and the earth angle (angle in origin from y axis to current position), 
+        converts flat steps to round earth steps. '''
+    x_round_step = y_flat_step * np.sin(earth_angle) + x_flat_step * np.cos(earth_angle)  
+    y_round_step = y_flat_step * np.cos(earth_angle) - x_flat_step * np.sin(earth_angle)  # y_flat is decreasing because we are going down
+    return x_round_step, y_round_step
 
 def lift_perpendicular_to_velocity(vx, vy, a_lift, p: Params):
     # get vel angle
@@ -76,13 +74,12 @@ def get_acceleration(Sk, Mk, p: Params):
     vx_v_mass = vx / v_mass
     vy_v_mass = vy / v_mass
 
-    air_density = get_air_density_cubic_spline(y - RADIUS_EARTH)
+    air_density = air_dens_f((np.sqrt(x**2 + y**2) if p.sim_round_earth else y) - RADIUS_EARTH)
 
     # Air drag
     F_air_drag = 0.5 * p.capsule_surface_area * air_density * p.capsule_drag_coefficient * v**2
     ax = - F_air_drag * vx_v_mass
     ay = - F_air_drag * vy_v_mass
-    # print("init values in acc: x: ", round(x, 2), "  y:", round(y, 2), "  vx:", round(vx, 2), "  vy:", round(vy, 2), "  v:", round(v, 2), " v_mass:", round(v_mass, 2))
 
     if v <= p.parachute_max_open_velocity and (np.sqrt(x**2 + y**2) if p.sim_round_earth else y) - RADIUS_EARTH <= p.parachute_max_open_altitude and p.is_reentry_sim and p.sim_with_parachute:
         # Parachute drag
@@ -91,7 +88,6 @@ def get_acceleration(Sk, Mk, p: Params):
         ay -= F_air_drag_parachute * vy_v_mass
         Mk[A] = (F_air_drag + F_air_drag_parachute) / p.capsule_mass
         Mk[CHUTE_OPEN] = 1
-        # print("F_drag_parachute: ", round(F_air_drag_parachute, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
     else:
         # Lift 
         F_lift = 0.5 * p.capsule_surface_area * air_density * p.capsule_lift_coefficient * v**2
@@ -103,12 +99,11 @@ def get_acceleration(Sk, Mk, p: Params):
         else:            
             ay += a_lift # lift is always up, and that is guaranteed by v**2 wich makes lift force positive
         Mk[A] = (F_air_drag - F_lift) / p.capsule_mass
-        # print("F_lift:           ", round(F_lift, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
 
     # Gravity
     g = G_M / y**2
     ay -= g
-    # print("F_g:               ", round(g, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2), "  a:", round(np.sqrt(ax**2 + ay**2), 2), "  a_without_G:", round(Mk[A], 2))
+
     return ax, ay, Mk
 
     
@@ -122,9 +117,12 @@ def reentry_slope(Sk, Mk, p:Params):
     slopes = np.zeros(4, dtype=float)
     # vel derivatives == aceleeration in the current state (given considering current velocity and altitude)
     ax, ay, Mk = (0,0,Mk) if p.is_horizontal_sim else get_acceleration(Sk, Mk, p)
+    if p.sim_round_earth:
+        ax, ay = make_round_earth(ax, ay, Mk[EARTH_ANGLE])
+
     slopes[VX] = ax
     slopes[VY] = ay
-
+        
     # x and y derivatives == velocity in the current state (given considering current velocity)
     slopes[X] = Sk[VX]
     slopes[Y] = Sk[VY]
@@ -136,11 +134,11 @@ def reentry_slope(Sk, Mk, p:Params):
     
 def run_one_simulation(S0, M0, p: Params, method_f):
     def print_final_state(S, M, str):
-        print(f"{str}:  final x: {S[X]:.2f}    final y: {(S[Y] - RADIUS_EARTH):.2f}    final v: {M[V]:.2f}    final a: {M[A]:.2f}")
+        print(f"{str}:  x: {S[X]:.2f}    y: {(S[Y] - RADIUS_EARTH):.2f}    v: {M[V]:.2f}    a: {M[A]:.2f}   acc_angle: {M[EARTH_ANGLE]:.2f}")
 
     size = int(p.sim_max_time / p.dt + 1)
     S = np.zeros((size, S0.shape[0]), dtype=float) # System variables: [x, y, vx, vy]
-    M = np.zeros((size, M0.shape[0]), dtype=float) # Other metrics: [v, a, accumulated_horizontal_distance]
+    M = np.zeros((size, M0.shape[0]), dtype=float) # Other metrics: [v, a, acc_angle, chute_open]
     t = np.array([i * p.dt for i in range(size)])
     
     S[0] = S0
@@ -148,6 +146,8 @@ def run_one_simulation(S0, M0, p: Params, method_f):
 
     for i in range(1, size):
         S[i], M[i] = method_f(S[i-1], M[i-1], p, reentry_slope)
+        if i % 5_000 == 0:       
+            print("i: ", i, "  x:", round(S[i][X], 2), "  y:", round(S[i][Y], 2), "  v:", round(M[i][V], 2), "  a:", round(M[i][A], 2), "  acc_angle:", round(M[i][EARTH_ANGLE], 2), end="\r")
         if (np.sqrt(S[i][X]**2 + S[i][Y]**2) if p.sim_round_earth else S[i][Y]) < RADIUS_EARTH:
             print_final_state(S[i], M[i], "Landed")
             return S[:i+1], M[:i+1], t[:i+1]
@@ -194,12 +194,12 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
                 S, M, t = run_one_simulation(S0, M0, p, method_f)
             
             # Update Y positions before we plot them
-            # if p.sim_round_earth: 
-            #     S[:, Y] = np.sqrt(S[:, X]**2 + (S[:, Y])**2)    # in flat earth y is a cathetus (vertical distance from x axis); in round earth y is hipotenuse (distance from origin); so we use pythagoras to convert it
+            if p.sim_round_earth: 
+                S[:, Y] = np.sqrt(S[:, X]**2 + (S[:, Y])**2)    # in flat earth y is a cathetus (vertical distance from x axis); in round earth y is hipotenuse (distance from origin); so we use pythagoras to convert it
             
             # Update X positions to round earth before we plot them (position x is the arc length of round earth: x = R * angle)
             S[:, X] = np.array(M[:, EARTH_ANGLE] * RADIUS_EARTH)  # one method, using the angle accumulated in the simulation
-            x_tg = RADIUS_EARTH * (np.radians(90) - np.arctan2(S[:, Y], S[:, X] - p.x_0)) # another method, using positions x and y to calculate the total angle directly
+            # S[:, X] = RADIUS_EARTH * (np.radians(90) - np.arctan2(S[:, Y], S[:, X] - p.x_0)) # another method, using positions x and y to calculate the total angle directly
             final_x = S[:, X][-1]
             # print("final_x with arctg: ", round(final_x, 2), "       with acc angle: ", round(x_acc[-1], 2), "    diff: ", round(final_x - x_acc[-1], 2))
             

@@ -16,7 +16,7 @@ def get_residual_vector(Sk, Sk1, Mk, p: Params, slope_f):
 def get_jacobian_matrix(Sk, Mk, p: Params):
     ''' returns the jacobian matrix.'''
     x, y, vx, vy = Sk
-    v = Mk[V]
+    v = Mk[V] if Mk[V] != 0 else 1e-20
 
     # jacobian matrix for system of 4 equations with 4 variables
     J = np.zeros((4, 4))
