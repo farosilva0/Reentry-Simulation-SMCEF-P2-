@@ -19,10 +19,11 @@ np.set_printoptions(suppress=True, precision=3)
 DENSITY_CSV = pd.read_csv('air_density.csv')                # Air density table
 ALTITUDE = DENSITY_CSV['altitude']                          # Altitude values
 AIR_DENSITY = DENSITY_CSV['air_density']                    # Air density values
-f = CubicSpline(ALTITUDE, AIR_DENSITY, bc_type='natural')   # Cubic spline interpolation for air density
+air_dens_f = CubicSpline(ALTITUDE, AIR_DENSITY, bc_type='natural')   # Cubic spline interpolation for air density
 
+# TODO: apagar
 def get_air_density_cubic_spline(altitude):
-    result = f(altitude)
+    result = air_dens_f(altitude)
     return result if result > 0.0 else 0.0
 
 

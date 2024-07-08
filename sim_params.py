@@ -7,12 +7,12 @@ import numpy as np
 ######################################################################
 
 ''' 0. Choose if you want to save plot images in folder "plot_images". '''
-SAVE_PLOT_IMAGES = False
-SIM_NAME_FOR_IMAGE = "x" 
+SAVE_PLOT_IMAGES = True
+SIM_NAME_FOR_IMAGE = "implicit" 
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 7
+SIM_TO_RUN = 2
 # --------------------------------------------------------------------
 # REENTRY_SIMULATION OPTIONS: 
 REENTRY_SIM_NORMAL = 1                  # we'll start simulation for several angles and velocities
@@ -28,7 +28,7 @@ PROJECTILE_SIM = 7                      # we'll start simulation for several ang
 
 
 ''' 2. Choose more options: '''
-SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
+SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
 LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
                                         # if True, lift force will be perpendicular to velocity direction, and always pointing up
@@ -38,11 +38,11 @@ ROUND_EARTH = False                  # if True we'll simulate the reentry in a r
 
 
 # -----> to use different init angles and velocities, set flag to true and choose them
-USE_CUSTOMIZED_INIT_VALUES = False
-INIT_ANGLES = [-1, -2, -4, -8, -12] #[ -8, -16]    # initial angles (degrees)
-INIT_VELOCITIES = [8_000, 12_000] #, 12_000, 16_000] # initial velocities (m/s)
+USE_CUSTOMIZED_INIT_VALUES = True
+INIT_ANGLES = [-4, -8, -12] #[ -8, -16]    # initial angles (degrees)
+INIT_VELOCITIES = [4_000, 8_000, 12_000, 16_000] #, 12_000, 16_000] # initial velocities (m/s)
 
-DT = 0.01                        # time steps (s)
+DT = 1                        # time steps (s)
 SIM_MAX_TIME = 60 * 30            # max time for the simulation (s)
 SIMS_TO_SHOW_IN_PLOT_METRICS = 12 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
 
@@ -214,7 +214,7 @@ def get_params():
     elif SIM_TO_RUN == PROJECTILE_SIM:
         p.altitude_0 = 0
         p.init_angles = [30, 45, 60]
-        p.init_velocities = [100]
+        p.init_velocities = [300]
         return correct_exception_params(p)
     else: 
         raise Exception("Invalid SIM_TO_RUN value")
