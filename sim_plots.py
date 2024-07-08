@@ -87,6 +87,8 @@ def plot_all_reentrys(success, accel, vel, before, after, p: Params):
 
 show_parachute_label = False
 min_dist_label = max_dist_label = max_success_dist_label = None
+MAX_ALTITUDE_TO_PLOT = 200_000
+max_altitude = MAX_ALTITUDE_TO_PLOT
 
 def start_sims_metrics_plot(p: Params, total_sims_to_show): 
     fig, axs = plt.subplots(2, 3, figsize=(12, 10))
@@ -140,12 +142,14 @@ def plot_sim_metrics(axs, sim_metrics, angle_0, v_0, is_reentry_sim, p: Params):
     # x=distance, y=altitude
     plot_metric(axs[0,0], sim[PATH_X], dist_label, sim[PATH_Y], alt_label, init_values_lable + x_comp_label + y_comp_label, chute_open_idx, p) 
     # save simulations landing distances to see if we plot the landing boudaries later
-    global min_dist_label, max_dist_label, max_success_dist_label
+    global min_dist_label, max_dist_label, max_success_dist_label, max_altitude
     max_x = max(sim[PATH_X])  
     if min_dist_label is None and p.min_horizontal_distance <= max_x:
         min_dist_label = max_success_dist_label = p.min_horizontal_distance 
     if max_dist_label is None and p.max_horizontal_distance <= max_x: 
         max_dist_label = max_success_dist_label = p.max_horizontal_distance
+    # save max altitude to limit the y axis in the altitude plots
+    max_altitude = min(MAX_ALTITUDE_TO_PLOT, max(sim[PATH_Y]) * 1.1)
 
 
     # x=time, y=altitude
@@ -180,7 +184,7 @@ def plot_sim_metrics(axs, sim_metrics, angle_0, v_0, is_reentry_sim, p: Params):
 
 
 def end_sims_metrics_plot(fig, axs, p: Params): 
-    global show_parachute_label, min_dist_label, max_dist_label, max_success_dist_label
+    global show_parachute_label, min_dist_label, max_dist_label, max_success_dist_label, max_altitude
     # plot extra information and labels in the plots  
     for ax in axs.flat:
         # plot parachute opening point label
@@ -193,11 +197,11 @@ def end_sims_metrics_plot(fig, axs, p: Params):
         if p.is_reentry_sim and ax in [axs[0,1], axs[0,2]]: 
             if p.is_reentry_sim and not p.orbit_or_escape_vel_sim: # invert axis if reentry simulation 
                 ax.invert_xaxis()
-            ax.set_xlim(left=200_000) # limit the max altitude to 200_000
+            ax.set_xlim(left=max_altitude) # limit the max altitude ploted
             ax.axvline(x=p.altitude_0, color='blue', linestyle='--', label='initial altitude') # plot initial altitude line
         # plots with altitude on y axis
         if p.is_reentry_sim and ax in [axs[0,0], axs[1,0]]: 
-            ax.set_ylim(top=200_000) # limit the max altitude to 200_000
+            ax.set_ylim(top=max_altitude) # limit the max altitude ploted
         # X_Y plot 
         if ax == axs[0,0]: 
             if min_dist_label is not None: # plot landing boundaries

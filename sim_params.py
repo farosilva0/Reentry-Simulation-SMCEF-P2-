@@ -12,21 +12,23 @@ SIM_NAME_FOR_IMAGE = "x"
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 2
-#------------------------
+SIM_TO_RUN = 7
+# --------------------------------------------------------------------
 # REENTRY_SIMULATION OPTIONS: 
 REENTRY_SIM_NORMAL = 1                  # we'll start simulation for several angles and velocities
 REENTRY_SIM_LESS_PAIRS = 2              # we'll start simulation for less angles and velocities
 REENTRY_SIM_VERTICAL_MOV = 3            # we'll start the simulation without velocity, so with forces object will move vertically
                                         # If Lift = TRUE ->  For vertical simulation, make sure LIFT = 0, because if not there will be horizontal movement; try with lift = 0 and = 1 to see the lift effect
-REENTRY_SIM_ORBITAL_MOV = 4             # if with ROUND_EARTH = TRUE, we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
-REENTRY_SIM_ESCAPE_VEL_MOV = 5              # if with ROUND_EARTH = TRUE, we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
+REENTRY_SIM_HORIZONTAL_MOV = 4          # we'll start the simulation with horizontal angle and initial velocity, and forces will be 0
+REENTRY_SIM_ORBITAL_MOV = 5             # if with ROUND_EARTH = TRUE, we'll start the simulation with the orbital velocity, so the object will keep the same altitude and will move horizontally
+REENTRY_SIM_ESCAPE_VEL_MOV = 6              # if with ROUND_EARTH = TRUE, we'll start the simulation with the escape velocity, so the object will keep the same altitude and will move horizontally
 # PROJECTILE_SIMULATION OPTIONS: 
-PROJECTILE_SIM = 6                      # we'll start simulation for several angles and velocities
-#------------------------
+PROJECTILE_SIM = 7                      # we'll start simulation for several angles and velocities
+# --------------------------------------------------------------------
+
 
 ''' 2. Choose more options: '''
-SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
+SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
 LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
                                         # if True, lift force will be perpendicular to velocity direction, and always pointing up
@@ -50,8 +52,8 @@ CAPSULE_LIFT_COEFFICIENT = 1        # lift coefficient to use in the simulation
 PARACHUTE_DRAG_COEFFICIENT = 1      # drag coefficient to use in the simulation
 PARACHUTE_MAX_OPEN_ALTITUDE = 1_000 # maximum altitude to open the parachute
 
-NEWTON_EPSILON = 0.0001   # for newton method (implicit) - to stop iterating when we find a "almost root" smaller than this value
-NEWTON_MAX_ITER = 1000    # for newton method (implicit) - maximum number of iterations
+NEWTON_EPSILON = 0.001   # for newton method (implicit) - to stop iterating when we find a "almost root" smaller than this value
+NEWTON_MAX_ITER = 100    # for newton method (implicit) - maximum number of iterations
 
 
 
@@ -97,17 +99,24 @@ class Params:
         # Simulation details
         self.dt = DT
         self.sim_max_time = SIM_MAX_TIME
-        self.is_reentry_sim = SIM_TO_RUN != PROJECTILE_SIM 
-        self.sim_with_parachute = SIM_WITH_PARACHUTE        
-        self.sims_to_show_in_plot_metrics = SIMS_TO_SHOW_IN_PLOT_METRICS
         self.epsilon = NEWTON_EPSILON
         self.max_iter = NEWTON_MAX_ITER
-        self.sim_round_earth = ROUND_EARTH
-        self.lift_perpendicular_to_velocity = LIFT_PERPENDICULAR_TO_VELOCITY
+
+        # Type of simulation
+        self.is_reentry_sim = SIM_TO_RUN != PROJECTILE_SIM 
         self.orbit_or_escape_vel_sim = False
+        self.is_horizontal_sim = False
+
+        # Simulation options
+        self.sim_round_earth = ROUND_EARTH
+        self.sim_with_parachute = SIM_WITH_PARACHUTE 
+        self.lift_perpendicular_to_velocity = LIFT_PERPENDICULAR_TO_VELOCITY
         self.max_angle_of_attack = MAX_ANGLE_OF_ATTACK
-        self.save_plot_images = SAVE_PLOT_IMAGES
+
+        # Plot options
         self.sim_name_for_image = SIM_NAME_FOR_IMAGE
+        self.sims_to_show_in_plot_metrics = SIMS_TO_SHOW_IN_PLOT_METRICS
+        self.save_plot_images = SAVE_PLOT_IMAGES
 
         # Initial conditions
         self.x_0 = 0
@@ -177,9 +186,6 @@ def get_params():
     if SIM_TO_RUN == REENTRY_SIM_NORMAL:
         return correct_exception_params(p)
     elif SIM_TO_RUN == REENTRY_SIM_LESS_PAIRS:
-        INIT_ANGLES = [-1, -2, -4, -8, -12] #[ -8, -16]    # initial angles (degrees)
-        INIT_VELOCITIES = [8_000, 12_000] #, 12_000, 16_000] # initial velocities (m/s)
-
         p.init_angles = [-2, -4, -12, -16]
         p.init_velocities = [4_000, 8_000, 16_000] # with round earth we reduce speed to not escape to space
         return correct_exception_params(p)
@@ -187,6 +193,11 @@ def get_params():
         p.x_0 = 100_000
         p.init_angles = [90]
         p.init_velocities = [0]
+        return correct_exception_params(p)
+    elif SIM_TO_RUN == REENTRY_SIM_HORIZONTAL_MOV:
+        p.init_angles = [0]
+        p.init_velocities = [1000]
+        p.is_horizontal_sim = True
         return correct_exception_params(p)
     elif SIM_TO_RUN == REENTRY_SIM_ORBITAL_MOV:
         p.sim_max_time = 60 * 4
@@ -203,7 +214,7 @@ def get_params():
     elif SIM_TO_RUN == PROJECTILE_SIM:
         p.altitude_0 = 0
         p.init_angles = [30, 45, 60]
-        p.init_velocities = [1000]
+        p.init_velocities = [100]
         return correct_exception_params(p)
     else: 
         raise Exception("Invalid SIM_TO_RUN value")

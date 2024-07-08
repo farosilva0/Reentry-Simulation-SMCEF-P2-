@@ -120,7 +120,7 @@ def reentry_slope(Sk, Mk, p:Params):
     
     slopes = np.zeros(4, dtype=float)
     # vel derivatives == aceleeration in the current state (given considering current velocity and altitude)
-    ax, ay, Mk = get_acceleration(Sk, Mk, p)
+    ax, ay, Mk = (0,0,Mk) if p.is_horizontal_sim else get_acceleration(Sk, Mk, p)
     slopes[VX] = ax
     slopes[VY] = ay
 
@@ -193,9 +193,8 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
                 S, M, t = run_one_simulation(S0, M0, p, method_f)
             
             # Update Y positions before we plot them
-            if p.sim_round_earth: 
-                assert p.sim_round_earth, "fghj"                              # if ROUND_EARTH is True, we convert y positions from flat earth to round earth (this needs to be done before updating x positions, but subtracting RADIUS_EARTH only after adapting x positions to round earth)
-                S[:, Y] = np.sqrt(S[:, X]**2 + (S[:, Y])**2)    # in flat earth y is a cathetus (vertical distance from x axis); in round earth y is hipotenuse (distance from origin); so we use pythagoras to convert it
+            # if p.sim_round_earth: 
+            #     S[:, Y] = np.sqrt(S[:, X]**2 + (S[:, Y])**2)    # in flat earth y is a cathetus (vertical distance from x axis); in round earth y is hipotenuse (distance from origin); so we use pythagoras to convert it
             
             # Update X positions to round earth before we plot them (position x is the arc length of round earth: x = R * angle)
             S[:, X] = np.array(M[:, EARTH_ANGLE] * RADIUS_EARTH)  # one method, using the angle accumulated in the simulation
