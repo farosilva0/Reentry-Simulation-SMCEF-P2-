@@ -39,6 +39,27 @@ def make_round_earth (x, y, x_step, y_step, earth_angle):
     y += y_step * np.cos(earth_angle) - x_step * np.sin(earth_angle)  # y_flat is decreasing because we are going down
     return x, y
 
+def lift_perpendicular_to_velocity(vx, vy, a_lift, p: Params):
+    # get vel angle
+    vel_angle = np.arctan2(vy, vx)
+    # get lift angle perpendicular to velocity
+    lift_angle = vel_angle + np.pi/2
+    # to guarantee lift is always up
+    if lift_angle > np.pi:     
+        lift_angle -= np.pi 
+    # use attack angle to increase lift over y component as much as possible
+    if lift_angle > np.pi/2 - p.max_angle_of_attack and lift_angle < np.pi/2 + p.max_angle_of_attack:
+        lift_angle = np.pi/2                        # if with max angle of attack we can make the lift up, so we do it 
+    elif lift_angle < np.pi/2 - p.max_angle_of_attack:
+        lift_angle += p.max_angle_of_attack         # if lift is much smaller than 90º, we increase it to the max angle of attack
+    else:
+        lift_angle -= p.max_angle_of_attack         # if lift is much bigger than 90º, we decrease it to the max angle of attack
+    # calculate lift acceleration components   
+    a_lift_x = a_lift * np.cos(lift_angle)
+    a_lift_y = a_lift * np.sin(lift_angle)
+    # print("perpendicular lift:   v_angle:", round(vel_angle, 2), "   lift_angle_with_attack_correction:", round(lift_angle, 2), "    a_lift:", round(a_lift, 2), "    a_lift_x:", round(a_lift_x, 2), "    a_lift_y: ", round(a_lift_y, 2))
+    return a_lift_x, a_lift_y
+
 
 def get_acceleration(Sk, Mk, p: Params): 
     ''' Calculates the total acceleration on the capsule, which depends if the parachutes are deployed or not.
@@ -71,9 +92,15 @@ def get_acceleration(Sk, Mk, p: Params):
         Mk[CHUTE_OPEN] = 1
         # print("F_drag_parachute: ", round(F_air_drag_parachute, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
     else:
-        # Lift
+        # Lift 
         F_lift = 0.5 * p.capsule_surface_area * air_density * p.capsule_lift_coefficient * v**2
-        ay += (F_lift / p.capsule_mass)
+        a_lift = F_lift / p.capsule_mass
+        if p.lift_perpendicular_to_velocity:
+            a_lift_x, a_lift_y = lift_perpendicular_to_velocity(vx, vy, a_lift, p)
+            ax += a_lift_x
+            ay += a_lift_y
+        else:            
+            ay += a_lift # lift is always up, and that is guaranteed by v**2 wich makes lift force positive
         Mk[A] = (F_air_drag - F_lift) / p.capsule_mass
         # print("F_lift:           ", round(F_lift, 2), "\t-->> ax:", round(ax, 2), " ay:", round(ay, 2))
 
@@ -107,6 +134,9 @@ def reentry_slope(Sk, Mk, p:Params):
 
     
 def run_one_simulation(S0, M0, p: Params, method_f):
+    def print_final_state(S, M, str):
+        print(f"{str}:  final x: {S[X]:.2f}    final y: {(S[Y] - RADIUS_EARTH):.2f}    final v: {M[V]:.2f}    final a: {M[A]:.2f}")
+
     size = int(p.sim_max_time / p.dt + 1)
     S = np.zeros((size, S0.shape[0]), dtype=float) # System variables: [x, y, vx, vy]
     M = np.zeros((size, M0.shape[0]), dtype=float) # Other metrics: [v, a, accumulated_horizontal_distance]
@@ -118,9 +148,9 @@ def run_one_simulation(S0, M0, p: Params, method_f):
     for i in range(1, size):
         S[i], M[i] = method_f(S[i-1], M[i-1], p, reentry_slope)
         if (np.sqrt(S[i][X]**2 + S[i][Y]**2) if p.sim_round_earth else S[i][Y]) < RADIUS_EARTH:
-            print(f"Landed:  M: ", M[i])
+            print_final_state(S[i], M[i], "Landed")
             return S[:i+1], M[:i+1], t[:i+1]
-    print(f"Time out:  M: ", M[i])
+    print_final_state(S[size-1], M[size-1], "Time out")
     return S, M, t
 
 
@@ -140,14 +170,14 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
     # prepare plots to be done: if too many simulations, we will show only a few of them
     total_sims = len(p.init_angles) * len(p.init_velocities)
     total_sims_to_show = min(p.sims_to_show_in_plot_metrics, total_sims)
-    axs = plot.start_sims_metrics_plot(p, total_sims_to_show)
+    fig, axs = plot.start_sims_metrics_plot(p, total_sims_to_show)
     sims_to_show = np.random.choice(total_sims, size=total_sims_to_show, replace=False)
     
     # Run all simulations
     sim_number = 0
     for angle_0 in p.init_angles:
         for v_0 in p.init_velocities:
-            print(f"------------------------> sim {sim_number + 1} of {total_sims} - angle: ", angle_0, "    velocity: ", v_0)
+            print(f"---> sim {sim_number + 1} of {total_sims} - angle (", angle_0, ")    velocity (", v_0, ")")
             
             # Initial state
             angle_0_rad = np.radians(angle_0)
@@ -199,9 +229,9 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
                 plot.plot_sim_metrics(axs, sim_metrics, angle_0, v_0, p.is_reentry_sim, p)
             sim_number += 1
 
-    plot.end_sims_metrics_plot(axs, p)
+    plot.end_sims_metrics_plot(fig, axs, p)
     if p.is_reentry_sim:
-        plot.plot_all_reentrys(successful_pairs, acceleration_pairs, velocity_pairs, landed_before, landed_after)
+        plot.plot_all_reentrys(successful_pairs, acceleration_pairs, velocity_pairs, landed_before, landed_after, p)
     
 
 
