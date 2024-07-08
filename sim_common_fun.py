@@ -188,8 +188,6 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
             # Plot this simulation metrics (to avoid storing them all in then ploting them all at once)
             if sim_number in sims_to_show:
                 sim_metrics = {
-                    INIT_ANGLE: angle_0,
-                    INIT_VELOCITY: v_0,
                     PATH_X: S[1:, X],
                     PATH_Y: S[1:, Y] - RADIUS_EARTH,
                     ABS_VELOCITIES: M[1:, V],
@@ -198,7 +196,7 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
                     CHUTE_OPENING: M[1:, CHUTE_OPEN],
                     TIMES: t[1:]
                 }
-                plot.plot_sim_metrics(axs, sim_metrics, p.is_reentry_sim, p)
+                plot.plot_sim_metrics(axs, sim_metrics, angle_0, v_0, p.is_reentry_sim, p)
             sim_number += 1
 
     plot.end_sims_metrics_plot(axs, p)
