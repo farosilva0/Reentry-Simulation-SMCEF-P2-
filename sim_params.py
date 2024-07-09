@@ -31,7 +31,7 @@ PROJECTILE_SIM = 7                      # we'll start simulation for several ang
 INIT_ANGLES = [-1, -2, -4, -8] #[ -8, -16]    # initial angles (degrees)
 INIT_VELOCITIES = [2_000, 4_000, 8_000] #, 12_000, 16_000] # initial velocities (m/s)
 
-SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
+SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
 LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
                                         # if True, lift force will be perpendicular to velocity direction, and always pointing up
