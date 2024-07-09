@@ -12,9 +12,8 @@ import os
 
 ''' Options to save images of the plots '''
 DOTS_PER_INCH = 300 # Quality of images (100 is good to see on screen... 300 is better to support some zoom) 
-FOLDER_TO_SAVE_IMAGES = 'plot_images'
+FOLDER_TO_SAVE_IMAGES = 'images'
 os.makedirs(FOLDER_TO_SAVE_IMAGES, exist_ok=True)
-
 
 
 def save_image(fig, p: Params, plot_name):

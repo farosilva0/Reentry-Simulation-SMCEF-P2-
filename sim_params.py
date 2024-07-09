@@ -7,7 +7,7 @@ import numpy as np
 ######################################################################
 
 ''' 1. Choose if you want to save plot images in folder "plot_images". '''
-SAVE_PLOT_IMAGES = False
+SAVE_PLOT_IMAGES = True
 SIM_NAME_FOR_IMAGE = "implicit" 
 
 

@@ -5,7 +5,7 @@ from scipy.interpolate import CubicSpline
 import sim_plots as plot
 
 from sim_params import *
-from run_various_sims import *
+from z_run_various_sims import *
 
 
 
@@ -199,7 +199,6 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
             
             # Update X positions to round earth before we plot them (position x is the arc length of round earth: x = R * angle)
             S[:, X] = np.array(M[:, EARTH_ANGLE] * RADIUS_EARTH)  # one method, using the angle accumulated in the simulation
-            # S[:, X] = RADIUS_EARTH * (np.radians(90) - np.arctan2(S[:, Y], S[:, X] - p.x_0)) # another method, using positions x and y to calculate the total angle directly
             final_x = S[:, X][-1]
             # print("final_x with arctg: ", round(final_x, 2), "       with acc angle: ", round(x_acc[-1], 2), "    diff: ", round(final_x - x_acc[-1], 2))
             
