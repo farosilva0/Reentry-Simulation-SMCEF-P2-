@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 ######################################################################
@@ -12,7 +13,7 @@ SIM_NAME_FOR_IMAGE = "implicit"
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 2
+SIM_TO_RUN = 1
 # --------------------------------------------------------------------
 # REENTRY_SIMULATION OPTIONS: 
 REENTRY_SIM_NORMAL = 1                  # we'll start simulation for several angles and velocities
@@ -40,7 +41,7 @@ MAX_ANGLE_OF_ATTACK = 0                     # angle of attack in degrees (0 mean
 ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
 
 
-DT = 0.01                        # time steps (s)
+DT = 0.5                        # time steps (s)
 SIM_MAX_TIME = 60 * 30            # max time for the simulation (s)
 SIMS_TO_SHOW_IN_PLOT_METRICS = 12 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
 
@@ -86,6 +87,15 @@ X, Y, VX, VY = 0, 1, 2, 3
 
 ''' Other System Metrics. (indices in the Metrics vector)'''
 V, A, EARTH_ANGLE, CHUTE_OPEN = 0, 1, 2, 3
+
+
+
+############################################################################################################
+#                                   AIR DENSITY 
+############################################################################################################
+DENSITY_CSV = pd.read_csv('air_density.csv')                # Air density table
+ALTITUDE = DENSITY_CSV['altitude']                          # Altitude values
+AIR_DENSITY = DENSITY_CSV['air_density']                    # Air density values
 
 
 

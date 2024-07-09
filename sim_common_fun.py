@@ -16,9 +16,6 @@ np.set_printoptions(suppress=True, precision=3)
 ############################################################################################################
 #                                   AIR DENSITY 
 ############################################################################################################
-DENSITY_CSV = pd.read_csv('air_density.csv')                # Air density table
-ALTITUDE = DENSITY_CSV['altitude']                          # Altitude values
-AIR_DENSITY = DENSITY_CSV['air_density']                    # Air density values
 
 # air density interpolation
 # @Pre: the source document has a table with the air density values for each altitude until further distances in both directions, so we don't incur in errrs on the edges of the table
