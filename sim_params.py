@@ -8,7 +8,7 @@ import pandas as pd
 ######################################################################
 
 ''' 1. Choose if you want to save plot images in folder "plot_images". '''
-SAVE_PLOT_IMAGES = True
+SAVE_PLOT_IMAGES = False
 SIM_NAME_FOR_IMAGE = "implicit" 
 
 
@@ -41,7 +41,7 @@ MAX_ANGLE_OF_ATTACK = 0                     # angle of attack in degrees (0 mean
 ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
 
 
-DT = 0.5                        # time steps (s)
+DT = 0.01                        # time steps (s)
 SIM_MAX_TIME = 60 * 30            # max time for the simulation (s)
 SIMS_TO_SHOW_IN_PLOT_METRICS = 12 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
 
@@ -128,7 +128,7 @@ class Params:
         # Initial conditions
         self.x_0 = 0
         self.altitude_0 = 130_000
-        self.init_angles = np.negative(np.arange(start=0, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+        self.init_angles = np.negative(np.arange(start=13, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
         self.init_velocities = np.arange(start=0, stop=15_001, step=300)    # Possible Initial velocities (m/s)
 
         # Capsule parameters
