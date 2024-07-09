@@ -34,17 +34,18 @@ def get_jacobian_matrix(Sk, Mk, p: Params):
 
     # air drag and lift constants
     drag_const = -0.5 * p.capsule_surface_area * p.capsule_drag_coefficient / p.capsule_mass
+    parachute_const = -0.5 * p.parachute_surface_area * p.parachute_drag_coefficient / p.capsule_mass
     lift_const =  0.5 * p.capsule_surface_area * p.capsule_lift_coefficient / p.capsule_mass
 
-    #ax partial derivatives
-    J[2][1] = (drag_const * d_rho * vx * v)
-    J[2][2] = (drag_const * rho * (2 * vx**2 + vy**2)) / v
-    J[2][3] = (drag_const * rho * vx * vy) / v
+    # ax partial derivatives
+    J[2][1] = (drag_const * d_rho * vx * v) + (parachute_const * d_rho * vx * v)
+    J[2][2] = ((drag_const * rho * (2 * vx**2 + vy**2)) / v) + ((parachute_const * rho * (2 * vx**2 + vy**2)) / v)
+    J[2][3] = ((drag_const * rho * vx * vy) / v) + ((parachute_const * rho * vx * vy) / v)
 
     # ay partial derivatives
-    J[3][1] = (drag_const * d_rho * vy * v)                 + (lift_const * d_rho * (vx**2 + vy**2))   +   (2 * G_M * p.capsule_mass) / (y)**3
-    J[3][2] = (drag_const * rho * vx * vy / v)              + (2 * lift_const * rho * vx)
-    J[3][3] = (drag_const * rho * (2 * vy**2 + vx**2) / v)  + (2 * lift_const * rho * vy)
+    J[3][1] = (drag_const * d_rho * vy * v) + (parachute_const * d_rho * vy * v) + (lift_const * d_rho * (vx**2 + vy**2)) + (2 * G_M * p.capsule_mass) / (y)**3
+    J[3][2] = (drag_const * rho * vx * vy / v) + (parachute_const * rho * vx * vy / v) + (2 * lift_const * rho * vx)
+    J[3][3] = (drag_const * rho * (2 * vy**2 + vx**2) / v) + (parachute_const * rho * (2 * vy**2 + vx**2) / v) + (2 * lift_const * rho * vy)
 
     return J
 

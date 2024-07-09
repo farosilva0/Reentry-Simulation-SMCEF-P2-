@@ -1,4 +1,3 @@
-import datetime
 from matplotlib import ticker
 import matplotlib.pyplot as plt
 
@@ -37,7 +36,7 @@ def save_image(fig, p: Params, plot_name):
 
 def plot_air_density(f):
     '''plot the values of air density in function of the altitude'''
-    x = np.linspace(-1000, 500000, 1000000)
+    x = np.linspace(-1000, 500000, 100000)
     y = f(x)
 
     plt.figure(figsize = (10,8))

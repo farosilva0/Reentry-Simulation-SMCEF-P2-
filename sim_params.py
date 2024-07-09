@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 
 ######################################################################
@@ -7,12 +8,12 @@ import numpy as np
 ######################################################################
 
 ''' 1. Choose if you want to save plot images in folder "plot_images". '''
-SAVE_PLOT_IMAGES = True
+SAVE_PLOT_IMAGES = False
 SIM_NAME_FOR_IMAGE = "implicit" 
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 2
+SIM_TO_RUN = 1
 # --------------------------------------------------------------------
 # REENTRY_SIMULATION OPTIONS: 
 REENTRY_SIM_NORMAL = 1                  # we'll start simulation for several angles and velocities
@@ -89,6 +90,15 @@ V, A, EARTH_ANGLE, CHUTE_OPEN = 0, 1, 2, 3
 
 
 
+############################################################################################################
+#                                   AIR DENSITY 
+############################################################################################################
+DENSITY_CSV = pd.read_csv('air_density.csv')                # Air density table
+ALTITUDE = DENSITY_CSV['altitude']                          # Altitude values
+AIR_DENSITY = DENSITY_CSV['air_density']                    # Air density values
+
+
+
 class Params:
     ''' inside a class to be easier to pass as a parameter to the functions'''
     def __init__(self):
@@ -118,7 +128,7 @@ class Params:
         # Initial conditions
         self.x_0 = 0
         self.altitude_0 = 130_000
-        self.init_angles = np.negative(np.arange(start=0, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+        self.init_angles = np.negative(np.arange(start=13, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
         self.init_velocities = np.arange(start=0, stop=15_001, step=300)    # Possible Initial velocities (m/s)
 
         # Capsule parameters
