@@ -27,3 +27,15 @@ dist/
 *.bak
 *.swp
 .DS_Store
+
+
+# latex generated files
+*.aux
+*.fdb_latexmk
+*.fls
+*.out
+*.gz
+*.blg
+*.bbl
+*.pyg
+*.pdf

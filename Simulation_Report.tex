@@ -37,6 +37,7 @@
 
 \usepackage{xspace}
 \usepackage{ifthen}
+\usepackage{hyperref}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -76,10 +77,11 @@
 
 \author{João Garção (Nº 62663) \and\\ Fábio Silva (Nº 62730) \and \\Francisco Silva (Nº 63585)}
 
-%\authorrunning{F. Silva et al.}
+\authorrunning{ }
 %%%% ---> Write the author name to appear in the page headers
 % First names are abbreviated
 % If there are more than two authors use 'et al.' 
+
 
 
 \institute{NOVA School of Science and Technology}
@@ -96,7 +98,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \begin{abstract}
-Simulating complex physical phenomena is a crucial step in various fields, including science, industry, and research and development. However, these simulations often demand significant computational resources, making it essential to leverage specialized software and libraries. How do we determine the necessary precision against the available computational power and time? How can we find the right balance? What are the different methods and their respective advantages and disadvantages? This paper addresses these questions through the lens of simulating the cinematic reentry of a capsule into Earth's atmosphere. We explore the forces of gravity, drag, and lift, along with the deployment of a parachute before landing. This research, part of the Computational Modelling and Simulation in Engineering Physics discipline, represents a step forward in our ongoing effort to master and implement diverse simulation methodologies and techniques.
+Simulating complex physical phenomena is a crucial step in various fields, including science, industry, research and development. However, these simulations often demand significant computational resources, making it essential to leverage specialized software and libraries. How do we determine the necessary precision against the available computational power and time? How can we find the right balance? What are the different methods and their respective advantages and disadvantages? This paper addresses these questions through the lens of simulating the cinematic reentry of a capsule into Earth's atmosphere. We explore the forces of gravity, drag, and lift, along with the deployment of a parachute before landing. This research, part of the Computational Modelling and Simulation in Engineering Physics discipline, represents a step forward in our ongoing effort to master and implement diverse simulation methodologies and techniques.
 
 
 \keywords{Physics \and Simulation \and Cinematic \and Reentry}
@@ -112,14 +114,13 @@ Simulating complex physical phenomena is a crucial step in various fields, inclu
 
 \section{Introduction}
 % Context and Motivation
-The discipline of Computational Modelling and Simulation in Engineering Physics equips students and researchers with the essential tools and techniques to develop sophisticated simulations. This field is pivotal in achieving accurate and reliable results while efficiently managing computational resources. As simulations become increasingly complex, striking the right balance between precision and computational power is crucial. This discipline not only imparts the technical skills required but also fosters a deep understanding of how to optimize simulations for the best performance, making it an indispensable area of study for tackling real-world engineering challenges.
+The discipline of Computational Modelling and Simulation in Physics Engineering equips students and researchers with the essential tools and techniques to develop sophisticated simulations. This field is pivotal in achieving accurate and reliable results while efficiently managing computational resources. As simulations become increasingly complex, striking the right balance between precision and computational power is crucial. This discipline not only imparts the technical skills required but also fosters a deep understanding of how to optimize simulations for the best performance, making it an indispensable area of study for tackling real-world engineering challenges.
 
 % Research Goals
 This research focuses on simulating the reentry of a capsule into Earth's atmosphere, aiming to determine the optimal reentry parameters. The goal is to ensure the trajectory stays within specified constraints, such as minimizing maximum acceleration during descent, controlling landing velocity, and achieving a precise landing range. By fine-tuning these parameters, we aim to enhance the safety and reliability of the reentry process, providing valuable insights for future aerospace missions.
 
 % Contributions
-\francisco{meter git publico}
-In this paper, we introduce a tool available on GitHub \cite{git} that simulates the reentry of a capsule into Earth's atmosphere. Starting from an initial altitude of 130,000 meters, users can set the initial angle and velocity as the capsule descends under the influence of gravity, drag, and lift forces. The simulation also accounts for the deployment of a parachute at lower altitudes and velocities. The tool offers configurable parameters and various simulation modes, such as normal descent, orbital velocity, or escape velocity scenarios. Additionally, it allows for choosing between a flat Earth or a round Earth model, with lift forces oriented either perpendicular to gravity or to the velocity vector. The paper includes a set of plots to illustrate the simulation results, facilitating easier analysis of the reentry phenomenon.
+In this paper, we introduce a tool available on GitHub \cite{git} that simulates the reentry of a capsule into Earth's atmosphere. Starting from an initial altitude of 130 000 meters, users can set the initial angle and velocity as the capsule descends under the influence of gravity, drag, and lift forces. The simulation also accounts for the deployment of a parachute at lower altitudes and velocities. The tool offers configurable parameters and various simulation modes, such as normal descent, orbital velocity, or escape velocity scenarios. Additionally, it allows for choosing between a flat Earth or a round Earth model, with lift forces oriented either perpendicular to gravity or to the velocity vector. The paper includes a set of plots to illustrate the simulation results, facilitating easier analysis of the reentry phenomenon.
 
 % Paper structure
 This paper is organized as follows:
