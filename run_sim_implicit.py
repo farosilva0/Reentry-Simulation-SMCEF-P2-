@@ -14,44 +14,46 @@ def get_residual_vector(Sk, Sk1, Mk, p: Params, slope_f):
 
 
 def get_jacobian_matrix(Sk, Mk, p: Params):
-    ''' returns the jacobian matrix.'''
+    ''' returns the jacobian matrix with the partial derivatives of the system:
+        J = [[∂f₁/∂x, ∂f₁/∂y, ∂f₁/∂vx, ∂f₁/∂vy],
+             [∂f₂/∂x, ∂f₂/∂y, ∂f₂/∂vx, ∂f₂/∂vy],
+             [∂f₃/∂x, ∂f₃/∂y, ∂f₃/∂vx, ∂f₃/∂vy],
+             [∂f₄/∂x, ∂f₄/∂y, ∂f₄/∂vx, ∂f₄/∂vy]]'''
+    
     x, y, vx, vy = Sk
     v = Mk[V] if Mk[V] != 0 else 1e-20
-
-    # jacobian matrix for system of 4 equations with 4 variables
-    J = np.zeros((4, 4))
-
-    # vx partial derivatives 
-    J[0][2] = 1
-    
-    # vy partial derivatives
-    J[1][3] = 1
-
 
     # air density
     rho = air_dens_f(y - RADIUS_EARTH)
     d_rho = air_dens_f.derivative()(y - RADIUS_EARTH)
 
-    # air drag and lift constants
-    drag_const = -0.5 * p.capsule_surface_area * p.capsule_drag_coefficient / p.capsule_mass
-    parachute_const = -0.5 * p.parachute_surface_area * p.parachute_drag_coefficient / p.capsule_mass
-    lift_const =  0.5 * p.capsule_surface_area * p.capsule_lift_coefficient / p.capsule_mass
+    # Constants for drag of capsule (Dc), drag of parachute (Dp), and lift of capsule (Lc) 
+    Dc = -0.5 * p.capsule_surface_area * p.capsule_drag_coefficient / p.capsule_mass
+    Dp = -0.5 * p.parachute_surface_area * p.parachute_drag_coefficient / p.capsule_mass
+    Lc =  0.5 * p.capsule_surface_area * p.capsule_lift_coefficient / p.capsule_mass
+    
+    # jacobian matrix for system of 4 equations with 4 variables
+    J = np.zeros((4, 4))
 
-    # ax partial derivatives
-    J[2][1] = (drag_const * d_rho * vx * v) + (parachute_const * d_rho * vx * v)
-    J[2][2] = ((drag_const * rho * (2 * vx**2 + vy**2)) / v) + ((parachute_const * rho * (2 * vx**2 + vy**2)) / v)
-    J[2][3] = ((drag_const * rho * vx * vy) / v) + ((parachute_const * rho * vx * vy) / v)
+    # f₁ == vx partial derivatives 
+    J[0][2] = 1
+    
+    # f₂ == vy partial derivatives
+    J[1][3] = 1
 
-    # ay partial derivatives
-    J[3][1] = (drag_const * d_rho * vy * v) + (parachute_const * d_rho * vy * v) + (lift_const * d_rho * (vx**2 + vy**2)) + (2 * G_M * p.capsule_mass) / (y)**3
-    J[3][2] = (drag_const * rho * vx * vy / v) + (parachute_const * rho * vx * vy / v) + (2 * lift_const * rho * vx)
-    J[3][3] = (drag_const * rho * (2 * vy**2 + vx**2) / v) + (parachute_const * rho * (2 * vy**2 + vx**2) / v) + (2 * lift_const * rho * vy)
+    # f₃ = ax partial derivatives
+    J[2][1] = (Dc * d_rho * vx * v) + (Dp * d_rho * vx * v)
+    J[2][2] = ((Dc * rho * (2 * vx**2 + vy**2)) / v) + ((Dp * rho * (2 * vx**2 + vy**2)) / v)
+    J[2][3] = ((Dc * rho * vx * vy) / v) + ((Dp * rho * vx * vy) / v)
+
+    # f₄ = ay partial derivatives
+    J[3][1] = (Dc * d_rho * vy * v) + (Dp * d_rho * vy * v) + (Lc * d_rho * (vx**2 + vy**2)) + (2 * G_M * p.capsule_mass) / (y)**3
+    J[3][2] = (Dc * rho * vx * vy / v) + (Dp * rho * vx * vy / v) + (2 * Lc * rho * vx)
+    J[3][3] = (Dc * rho * (2 * vy**2 + vx**2) / v) + (Dp * rho * (2 * vy**2 + vx**2) / v) + (2 * Lc * rho * vy)
 
     return J
 
-
-
-     
+  
 
 def newton_backward_euler_step(Sk, Mk, p: Params, slope_f):
     ''' Finds the roots of the system of equations using Newton's method:
@@ -68,7 +70,6 @@ def newton_backward_euler_step(Sk, Mk, p: Params, slope_f):
     for i in range(max_iter):
         res_vector, Mk1 = get_residual_vector(Sk, Sk1, Mk, p, slope_f)
         if np.linalg.norm(res_vector) < epsilon:  # Verifica a convergência com o vetor residual
-        # if np.all(np.abs(Sk1) < epsilon): #TODO: ver que método é mais rapido
            break
         system_matrix = Idt - get_jacobian_matrix(Sk, Mk, p) # left side of the equation: I/dt - J
         delta = np.linalg.solve(system_matrix, -res_vector)
@@ -77,7 +78,6 @@ def newton_backward_euler_step(Sk, Mk, p: Params, slope_f):
     Mk1[V] = np.sqrt(Sk1[VX]**2 + Sk1[VY]**2)
     Mk1[EARTH_ANGLE] = Mk[EARTH_ANGLE] + (Sk1[X] - Sk[X]) / Sk1[Y]
     return Sk1, Mk1
-
 
 
 if __name__ == '__main__':

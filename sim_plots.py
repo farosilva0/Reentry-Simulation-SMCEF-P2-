@@ -106,7 +106,7 @@ def plot_metric(ax, x, x_label, y, y_label, init_values_lable, chute_open_idx, p
     if chute_open_idx > 0 and chute_open_idx < len(x):
         ax.scatter(x[chute_open_idx], y[chute_open_idx], color='green', marker='o', s=12)
         show_parachute_label = True 
-    # plot the initial altitude (if it's a reentry simulation)
+    # plot the initial altitude circles (if it's a reentry simulation)
     if is_altitude_plot and p.is_reentry_sim:
         ax.scatter(x[0], y[0], color='blue', marker='o', s=10)        
 

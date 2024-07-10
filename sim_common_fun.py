@@ -16,6 +16,9 @@ np.set_printoptions(suppress=True, precision=3)
 ############################################################################################################
 #                                   AIR DENSITY 
 ############################################################################################################
+DENSITY_CSV = pd.read_csv('air_density.csv')                # Air density table
+ALTITUDE = DENSITY_CSV['altitude']                          # Altitude values
+AIR_DENSITY = DENSITY_CSV['air_density']                    # Air density values
 
 # air density interpolation
 # @Pre: the source document has a table with the air density values for each altitude until further distances in both directions, so we don't incur in errrs on the edges of the table
@@ -53,7 +56,6 @@ def lift_perpendicular_to_velocity(vx, vy, a_lift, p: Params):
     # calculate lift acceleration components   
     a_lift_x = a_lift * np.cos(lift_angle)
     a_lift_y = a_lift * np.sin(lift_angle)
-    # print("perpendicular lift:   v_angle:", round(vel_angle, 2), "   lift_angle_with_attack_correction:", round(lift_angle, 2), "    a_lift:", round(a_lift, 2), "    a_lift_x:", round(a_lift_x, 2), "    a_lift_y: ", round(a_lift_y, 2))
     return a_lift_x, a_lift_y
 
 
@@ -62,8 +64,9 @@ def get_acceleration(Sk, Mk, p: Params):
         Updates metrics (M) with the total acceleration in the current state, without counting gravity aceleration.'''
     
     x, y, vx, vy = Sk
-    v, a, acc_horiz_dist, chute_open = Mk   
-    
+
+    v, a, acc_angle, chute_open = Mk
+       
     # variables commonly used in the calculations
     y = 1e-20 if y == 0 else y
     v = 1e-20 if v == 0 else v
@@ -182,7 +185,7 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
             vx = v_0 * np.cos(angle_0_rad)
             vy = v_0 * np.sin(angle_0_rad)
             S0 = np.array([p.x_0, p.altitude_0 + RADIUS_EARTH, vx, vy]) # S b= [X, Y, VX, VY]
-            M0 = np.array([v_0, 0, 0, 0]) # M = [V, A, ACC_EARTH_ANGLE] 
+            M0 = np.array([v_0, 0, 0, 0]) # M = [V, A, ACC_EARTH_ANGLE, CHUTE_OPEN] 
             
             # Run the simulation
             if run_with_solver_ivp: 
@@ -197,7 +200,6 @@ def run_all_simulations(method_f, run_with_solver_ivp=False):
             # Update X positions to round earth before we plot them (position x is the arc length of round earth: x = R * angle)
             S[:, X] = np.array(M[:, EARTH_ANGLE] * RADIUS_EARTH)  # one method, using the angle accumulated in the simulation
             final_x = S[:, X][-1]
-            # print("final_x with arctg: ", round(final_x, 2), "       with acc angle: ", round(x_acc[-1], 2), "    diff: ", round(final_x - x_acc[-1], 2))
             
             # Check success conditions of the simulation
             if np.any(M[:,A] > p.max_acceleration):

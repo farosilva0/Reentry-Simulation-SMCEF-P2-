@@ -8,12 +8,12 @@ import pandas as pd
 ######################################################################
 
 ''' 1. Choose if you want to save plot images in folder "plot_images". '''
-SAVE_PLOT_IMAGES = False
-SIM_NAME_FOR_IMAGE = "implicit" 
+SAVE_PLOT_IMAGES = True
+SIM_NAME_FOR_IMAGE = "img_name" 
 
 
 ''' 1. Choose the simulation to run from options below '''
-SIM_TO_RUN = 1
+SIM_TO_RUN = 2
 # --------------------------------------------------------------------
 # REENTRY_SIMULATION OPTIONS: 
 REENTRY_SIM_NORMAL = 1                  # we'll start simulation for several angles and velocities
@@ -29,16 +29,16 @@ PROJECTILE_SIM = 7                      # we'll start simulation for several ang
 ''' 2. Choose more options: '''
 
 # Pairs to run in REENTRY_SIM_CUSTOMIZED_PAIRS
-INIT_ANGLES = [-1, -2, -4, -8] #[ -8, -16]    # initial angles (degrees)
-INIT_VELOCITIES = [2_000, 4_000, 8_000] #, 12_000, 16_000] # initial velocities (m/s)
+INIT_ANGLES = [-1, -2, -4, -6, -8]    # initial angles (degrees)
+INIT_VELOCITIES = [2_000, 4_000, 6_000, 8_000, 10_000] #, 12_000, 16_000] # initial velocities (m/s)
 
-SIM_WITH_PARACHUTE = False          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
+SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
-LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
+LIFT_PERPENDICULAR_TO_VELOCITY = True  # if False, all lift force will be added to y component regardless of velocity direction
                                         # if True, lift force will be perpendicular to velocity direction, and always pointing up
-MAX_ANGLE_OF_ATTACK = 0                     # angle of attack in degrees (0 means no angle of attack)
+MAX_ANGLE_OF_ATTACK = 10                     # angle of attack in degrees (0 means no angle of attack)
 
-ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
+ROUND_EARTH = True                  # if True we'll simulate the reentry in a round Earth
 
 
 DT = 0.01                        # time steps (s)
@@ -128,8 +128,8 @@ class Params:
         # Initial conditions
         self.x_0 = 0
         self.altitude_0 = 130_000
-        self.init_angles = np.negative(np.arange(start=13, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
-        self.init_velocities = np.arange(start=0, stop=15_001, step=300)    # Possible Initial velocities (m/s)
+        self.init_angles = np.negative(np.arange(start=0, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
+        self.init_velocities = np.arange(start=0, stop=18_001, step=500)    # Possible Initial velocities (m/s)
 
         # Capsule parameters
         self.capsule_mass = 12_000
