@@ -8,7 +8,7 @@ import pandas as pd
 ######################################################################
 
 ''' 1. Choose if you want to save plot images in folder "plot_images". '''
-SAVE_PLOT_IMAGES = True
+SAVE_PLOT_IMAGES = False
 SIM_NAME_FOR_IMAGE = "img_name" 
 
 
@@ -29,8 +29,8 @@ PROJECTILE_SIM = 7                      # we'll start simulation for several ang
 ''' 2. Choose more options: '''
 
 # Pairs to run in REENTRY_SIM_CUSTOMIZED_PAIRS
-INIT_ANGLES = [-1, -2, -4, -6, -8]    # initial angles (degrees)
-INIT_VELOCITIES = [2_000, 4_000, 6_000, 8_000, 10_000] # initial velocities (m/s)
+INIT_ANGLES = [-1, -2, -4, -6, -8, -10]    # initial angles (degrees)
+INIT_VELOCITIES = [2_000, 4_000, 6_000, 8_000, 10_000, 12_000] # initial velocities (m/s)
 
 SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
@@ -38,7 +38,7 @@ LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added
                                         # if True, lift force will be perpendicular to velocity direction, and always pointing up
 MAX_ANGLE_OF_ATTACK = 0                     # angle of attack in degrees (0 means no angle of attack)
 
-ROUND_EARTH = True                  # if True we'll simulate the reentry in a round Earth
+ROUND_EARTH = False                  # if True we'll simulate the reentry in a round Earth
 
 
 DT = 0.0001                        # time steps (s)
@@ -98,6 +98,13 @@ DENSITY_CSV = pd.read_csv('air_density.csv')                # Air density table
 ALTITUDE = DENSITY_CSV['altitude']                          # Altitude values
 AIR_DENSITY = DENSITY_CSV['air_density']                    # Air density values
 
+
+
+
+
+############################################################################################################
+#                                   Params Class 
+############################################################################################################
 
 
 class Params:
@@ -180,7 +187,7 @@ class Params:
 
 def correct_exception_params(p: Params):
     if p.capsule_mass == 0:
-        p.capsule_mass = 1e-20
+        p.capsule_mass = 1e-10
     return p
 
 def orbital_velocity(altitude):

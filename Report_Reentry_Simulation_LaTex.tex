@@ -238,7 +238,8 @@ When tests include plots, it is necessary to close each plot before the next one
 % To easy go to sections use the left 
 
 \section{Physics of Simulation}
-In this section, we introduce the fundamental concepts and physical laws that underpin our model and simulation. We also outline the assumptions made in our simulation, acknowledging the practical constraints that prevent consideration of every criterion. Our simulation is based on the model depicted in Fig. \ref{model_forces}, illustrating the forces incorporated: gravity, drag, and lift. Additionally, it outlines how the round earth model influences the reference system used for calculations.
+In this section, we introduce the fundamental concepts and physical laws that underpin our model and simulation. We also outline the assumptions made in our simulation, acknowledging the practical constraints that prevent consideration of every criterion. Our simulation is based on the model depicted in Fig. \ref{model_forces}, which illustrates the forces incorporated: gravity ($mg$), drag ($D$), and lift ($L$). Additionally, it outlines how the round Earth model influences the reference system used for calculations, where $R$ represents the radius of Earth and $r$ is the radius of Earth plus the altitude above Earth's surface. $\theta$ is the angle from the y-axis to the current position, and $v$ is the velocity.
+
 
 
 \begin{figure}
@@ -251,7 +252,7 @@ In this section, we introduce the fundamental concepts and physical laws that un
 %%%%%%%%%%%%%%%%%%      GRAVITY     %%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Gravity}
-At the core of this simulation lies the gravitational force, essential for understanding the dynamics of objects in Earth's atmosphere. Unlike simpler simulations, the force of gravity varies with altitude from the Earth's surface, calculated relative to the center of the Earth. By default, gravitational force is computed using Newton's Law of Universal Gravitation, adjusting according to the distance between two objects—in this case, the Earth's center and the capsule or the projectile. The gravitational force \textbf{F\_G} is defined by the following formula, where \textbf{M} and \textbf{m} are the masses of the Earth and the object in kilograms, \textbf{r} is the distance between the Earth's center and the object in meters, and \textbf{G} is the gravitational constant:
+At the core of this simulation lies the gravitational force, essential for understanding the dynamics of objects in Earth's atmosphere. Unlike simpler simulations, the force of gravity varies with altitude from the Earth's surface, calculated relative to the center of the Earth. By default, gravitational force is computed using Newton's Law of Universal Gravitation, adjusting according to the distance between two objects—in this case, the Earth's center and the capsule or the projectile. The gravitational force \textbf{\( F_G \)} is defined by the following formula, where \textbf{M} and \textbf{m} are the masses of the Earth and the object in kilograms, \textbf{r} is the distance between the Earth's center and the object in meter\cite{orlando_trajectory}s:
 
 \begin{equation}
 F_G = \frac{G \cdot M \cdot m}{r^2}
@@ -283,7 +284,7 @@ Understanding these gravitational principles is crucial for accurately modeling 
 \subsection{Drag}
 The simulation also accounts for the drag force, which significantly affects the motion of objects in Earth's atmosphere. Unlike gravitational force, which diminishes with altitude, drag force increases with an object's speed and encounters resistance from the surrounding air. This force opposes the direction of the object's motion, reducing its speed over time.
 
-The drag force \( F_D \) is calculated using the following formula, where \( \rho \) represents the air density, \( A \) is the cross-sectional area of the object facing the direction of motion, and \( C_D \) is the drag coefficient that depends on the shape and surface roughness of the object:
+The drag force \( F_D \) is calculated using the following formula, where \( \rho \) represents the air density, \( A \) is the cross-sectional area of the object facing the direction of motion, and \( C_D \) is the drag coefficient that depends on the shape and surface roughness of the object \cite{gallais_mechanics}:
 
 \begin{equation}
 F_D = \frac{1}{2} \rho A C_D v^2 
@@ -294,7 +295,7 @@ Here,\textbf{v} denotes the velocity of the object relative to the air.
 \textbf{\\Drag Acceleration\\}
 Similar to gravity, the acceleration due to drag force can be determined using Newton's second law, 
 \textbf{F = ma}. However, unlike gravity, which acts vertically downward in full force, drag force opposes the velocity of the object. Therefore, the acceleration components caused by drag in both the \textbf{x} and \textbf{y} directions depend on the velocities in those respective axes.
-Thus, we can calculate the acceleration along the x-axis based on the velocity and its \textbf{x} and \textbf{y} components. E.g. for x component:
+Thus, we can calculate the acceleration along the x-axis based on the velocity and its \textbf{x} and \textbf{y} components. E.g. for x component \cite{chapman_analysis}:
 
 \begin{equation}
 a_x = - \frac{1}{2} \frac{\rho A C_D v^2 \cdot v_x}{v m}
@@ -310,21 +311,21 @@ The default simulation models the reentry of a capsule into Earth's atmosphere u
 %%%%%%%%%%%%%%%%%%      LIFT     %%%%%%%%%%%%%%%%%%%%%%
 
 \subsection{Lift}
-Finally, another force to consider is the lift force, which depends on the lift coefficient. This coefficient is influenced by the shape and orientation of the object and determines the magnitude of the lift force. The formula for lift force is analogous to that of drag force, but incorporating a lift coefficient, instead of a drag coefficient:
+Finally, another force to consider is the lift force, which depends on the lift coefficient. This coefficient is influenced by the shape and orientation of the object and determines the magnitude of the lift force. The formula for lift force is analogous to that of drag force, but incorporating a lift coefficient, instead of a drag coefficient \cite{orlando_voxels}:
 
 \begin{equation}
 F_L = \frac{1}{2} \rho A C_L v^2
 \end{equation}
 
 \textbf{\\Simulation of Lift\\}
-In the simulation, we typically apply lift perpendicular to gravity by default. This simplifies the application of the lift force, directing all lift acceleration to the y-component, and increasing it proportionally to velocity. Consequently, when an object descends vertically, gravity pulls downward, while both drag and lift exert an upward force. In other directions of motion, gravity always acts downward (negative sign), lift always acts upward (positive sign), and drag opposes the velocity (negative sign) to decelerate the object. So the lift acceleration, which is entirely applied in the y-axis, can be expressed as:
+In the simulation, we typically apply lift perpendicular to gravity by default. This simplifies the application of the lift force, directing all lift acceleration to the y-component, and increasing it proportionally to velocity. Consequently, when an object descends vertically, gravity pulls downward, while both drag and lift exert an upward force. In other directions of motion, gravity always acts downward (negative sign), lift always acts upward (positive sign), and drag opposes the velocity (negative sign) to decelerate the object. So the lift acceleration, which is entirely applied in the y-axis, can be expressed as \cite{miguel_optimal_reentry_control}:
 
 \begin{equation}
 a_x = 0 \quad \text{and} \quad a_y = \frac{1}{2} \frac{\rho A C_D v^2}{m}
 \end{equation}
 
 
-However, a key characteristic of the lift force is its orientation perpendicular to the velocity vector. In our simulation, we also have the option to model this lift force as being perpendicular to the velocity. To that end, we start by determining the velocity angle, for example, by calculating the angle from given \( v_x \) and \( v_y \). Subsequently, we determine the lift angle perpendicular to the velocity. One assumption we make is that the capsule is always well-oriented, ensuring that the lift force always acts upwards. This means the object does not rotate, and regardless of its direction of motion, the lift force is considered to act upwards. To enforce this, if the calculated lift angle exceeds \(\pi\), we adjust it accordingly. With the absolute lift value known, we then calculate the acceleration components as follows:
+However, a key characteristic of the lift force is its orientation perpendicular to the velocity vector \cite{reentry_matters}. In our simulation, we also have the option to model this lift force as being perpendicular to the velocity. To that end, we start by determining the velocity angle, for example, by calculating the angle from given \( v_x \) and \( v_y \). Subsequently, we determine the lift angle perpendicular to the velocity. One assumption we make is that the capsule is always well-oriented, ensuring that the lift force always acts upwards. This means the object does not rotate, and regardless of its direction of motion, the lift force is considered to act upwards. To enforce this, if the calculated lift angle exceeds \(\pi\), we adjust it accordingly. With the absolute lift value known, we then calculate the acceleration components as follows:
 
 \begin{minted}[frame=lines, bgcolor=verylightgray, fontsize=\small, linenos, numbersep=1pt]{python}
 vel_angle = np.arctan2(vy, vx) # Velocity angle
@@ -337,7 +338,8 @@ ay = a_lift * np.sin(lift_angle) # Acceleration in y-direction
 
 
 \textbf{\\Angle of Attack\\}
-For the reentry simulations, the capsule is initially set to undergo a ballistic reentry without the ability to adjust its trajectory. However, an option was implemented to orient the capsule's angle of attack \footnote{The angle of attack is the angle between the vehicle’s nose and its velocity vector \cite{returning_space}.}, allowing us to optimize the use of lift for a smoother descent. In the default simulation, lift acts perpendicular to gravity, predominantly lifting along the y-axis. If "LIFT\_PERPENDICULAR\_TO\_VELOCITY" is set to true, the lift is instead oriented perpendicular to the velocity vector, always directing upward (with the capsule maintaining its orientation upright throughout).
+For the reentry simulations, the capsule is initially set to undergo a ballistic reentry without the ability to adjust its trajectory. However, an option was implemented to orient the capsule's angle of attack \footnote{The angle of attack is the angle between the vehicle’s nose and its velocity vector \cite{returning_space}.}, allowing us to optimize the use of lift for a smoother descent. In the default simulation, lift acts perpendicular to gravity, predominantly lifting along the y-axis. 
+If "LIFT\_PERPENDICULAR\_TO\_VELOCITY" is set to true, the lift is instead oriented perpendicular to the velocity vector, always directing upward (with the capsule maintaining its orientation upright throughout).
 
  Additionally, there is an option to adjust the angle of attack, which alters the direction of lift to maximize its vertical component. For instance, setting "MAX\_ANGLE\_OF\_ATTACK = 0" applies lift normally perpendicular to the velocity. However, if "MAX\_ANGLE\_OF\_ATTACK = 5," for example, the simulation utilizes this margin to orient lift as vertically as feasible, thereby consistently countering the force of gravity.
 
@@ -464,7 +466,7 @@ Several aspects were not considered in the simulation:
 \textbf{\\Earth:\\}
 In reality, the Earth is not perfectly circular but rather elliptical. However, for the model, we assume a perfect circular shape.
 
-Additionally, the Earth's gravitational potential is not uniform due to its geoid shape, resulting in irregular gravitational forces across its surface. In the model, we assume uniform gravitational force along the surface, accounting only for changes with increasing altitude.
+Additionally, the Earth's gravitational potential is not uniform due to its geoid shape, resulting in irregular gravitational forces across its surface. In the model, we assume uniform gravitational force along the surface, accounting only for changes with increasing altitude \cite{mazyku_optimum_reentry}.
 
 During reentry simulations, Earth is assumed to be stationary and non-rotating. Therefore, factors like the Coriolis force, which deflects moving objects, and the centrifugal force due to Earth's spin are not considered. This simplification allows us to focus solely on gravitational effects and atmospheric dynamics without accounting for additional rotational influences on trajectory and atmospheric behavior.
 
@@ -473,7 +475,7 @@ During reentry simulations, Earth is assumed to be stationary and non-rotating. 
 Wind effects were not incorporated into the simulation. Given that the air is assumed to be still, there is no wind force impacting the dynamics, particularly notable after the parachute deployment. Consequently, neither drag nor lift calculations account for any wind influence.
 
 \textbf{\\Aircraft:\\}
-Although the angle of attack adjustment might be used to increase vertical lift automatically, the aircraft does not undergo any other maneuvers. The reentry simulation is entirely ballistic without any propulsion system. Additionally, the capsule remains stationary with respect to its reference frame, thus avoiding rotation and effects like the Magnus effect, which generates lateral forces perpendicular to the direction of movement.
+Although the angle of attack adjustment might be used to increase vertical lift automatically, the aircraft does not undergo any other maneuvers. The reentry simulation is entirely ballistic without any propulsion system. Additionally, the capsule remains stationary with respect to its reference frame, thus avoiding rotation and effects like the Magnus effect, which generates lateral forces perpendicular to the direction of movement \cite{returning_space}.
 
 
 
@@ -493,9 +495,9 @@ In this section, we will detail the mathematical methods employed for simulating
 \subsection{Forward Euler (Explicit)}
 
 \textbf{ODEs / Slopes\\}
-To simulate the evolution of a system, a reliable approach is to formulate a set of Ordinary Differential Equations (ODEs) that describe the predicted evolution or tendency of each variable. In our case, we focus on predicting the evolution of position and velocity, represented by variables \textbf{x}, \textbf{y}, \textbf{vx}, \textbf{vy}. These derivatives allow us to establish how these variables change over time. So by knowing the current state of these variables and their derivatives, we can simulate the trajectory of the capsule. Essentially, the derivatives indicate the slope or tendency of each variable at any given moment. With this information, knowing the current state and knowing the slope, we can predict where the capsule will be after a short interval of time \(\Delta\)t. The accuracy of our predictions improves with smaller time intervals \(\Delta\)t, ensuring a more precise simulation of the capsule's trajectory.
+To simulate the evolution of a system, a reliable approach is to formulate a set of Ordinary Differential Equations (ODEs) that describe the predicted evolution or tendency of each variable. In our case, we focus on predicting the evolution of position and velocity, represented by variables \textbf{x}, \textbf{y}, \textbf{vx}, \textbf{vy}. These derivatives allow us to establish how these variables change over time. So by knowing the current state of these variables and their derivatives, we can simulate the trajectory of the capsule. Essentially, the derivatives indicate the slope or tendency of each variable at any given moment. With this information, knowing the current state and knowing the slope, we can predict where the capsule will be after a short interval of time \(\Delta\)t. The accuracy of our predictions improves with smaller time intervals \(\Delta\)t, ensuring a more precise simulation of the capsule's trajectory \cite{github_metaphysics}.
 
-These systems of equations are often represented as vectors, denoted by symbols like \( \mathbf{S} \), \( \mathbf{U} \), or even a simple \( \mathbf{y} \) (which represents the entire system of equations rather than just a single variable \( y \), for instance, when using the solver\_ivp function in Python). This vector representation allows for a more flexible and concise implementation of the simulation dynamics. Here is an example of a system, where \( \mathbf{x} \), \( \mathbf{y} \), \( \mathbf{vx} \), and \( \mathbf{vy} \) represent the position and velocity variables, respectively:
+These systems of equations are often represented as vectors, denoted by symbols like \( \mathbf{S} \), \( \mathbf{U} \), or even a simple \( \mathbf{y} \) (which represents the entire system of equations rather than just a single variable \( y \), for instance, when using the solver\_ivp function in Python). This vector representation allows for a more flexible and concise implementation of the simulation dynamics. Here is an example of a system, where \( \mathbf{x} \), \( \mathbf{y} \), \( \mathbf{vx} \), and \( \mathbf{vy} \) represent the position and velocity variables, respectively \cite{github_channel}:
 
 \begin{equation}
 \mathbf{U}_{i+1} = \begin{bmatrix}
@@ -546,7 +548,7 @@ It also requires minimal computational resources. However, it is susceptible to 
 
 
 \subsection{Runge-Kutta (Explicit)}
-To improve the prediction accuracy of movement over time, the Runge-Kutta method refines the approach used in the forward Euler method. While the forward Euler method calculates the slope only at time step \( i \) and uses it to predict the next step \( (i+1) \), the Runge-Kutta method calculates the slope at both time steps \( i \) and \( i+1 \), then averages them. This method is designed to provide a more accurate numerical approximation to the solution.
+To improve the prediction accuracy of movement over time, the Runge-Kutta method refines the approach used in the forward Euler method. While the forward Euler method calculates the slope only at time step \( i \) and uses it to predict the next step \( (i+1) \), the Runge-Kutta method calculates the slope at both time steps \( i \) and \( i+1 \), then averages them. This method is designed to provide a more accurate numerical approximation to the solution \cite{misc_rocket}.
 
 The equations for \( k1 \) and \( k2 \) in the RK2 method are as follows:
 
@@ -561,11 +563,11 @@ where \( f(t_i, \mathbf{U}_i) \) represents the slope vector at time \( t_i \) f
 
 These values \( k1 \) and \( k2 \) are then used to update the state vector \( \mathbf{U} \) from time step \( i \) to \( i+1 \) using the weighted average of slopes.
 
-This method is more accurate than the explicit Euler method because it considers the variation of the function over the time interval \( dt \), providing a better numerical approximation to the solution. Expanding on this principle, Runge-Kutta methods offer different orders to enhance accuracy, making them highly effective for a wide range of simulation tasks.
+This method is more accurate than the explicit Euler method because it considers the variation of the function over the time interval \( dt \), providing a better numerical approximation to the solution. Expanding on this principle, Runge-Kutta methods offer different orders to enhance accuracy, making them highly effective for a wide range of simulation tasks \cite{github_reentry}.
 
 
 \textbf{\\Python solver\_ivp\\}
-For its versatility, Runge-Kutta is the default method used by Python's \texttt{solve\_ivp} (defaulting to Runge-Kutta 'RK45'). Other available options include 'RK23', 'DOP853', 'Radau', and 'BDF' for stiff problems. This solver runs the simulation automatically, making it both easy to use and precise. We only need to pass the slope function that calculates the derivatives of each variable of the model (all first-order ODEs), set an initial condition, specify an array with all the times to test, and run it. Here is an example of code implementation with an early stop condition:
+For its versatility, Runge-Kutta is the default method used by Python's \texttt{solve\_ivp} (defaulting to Runge-Kutta 'RK45'). Other available options include 'RK23', 'DOP853', 'Radau', and 'BDF' for stiff problems. This solver runs the simulation automatically, making it both easy to use and precise. We only need to pass the slope function that calculates the derivatives of each variable of the model (all first-order ODEs), set an initial condition, specify an array with all the times to test, and run it. Here is an example of code implementation with an early stop condition \cite{misc_rocket}:
 
  
 \begin{minted}[frame=lines, bgcolor=verylightgray, fontsize=\small, linenos, numbersep=1pt]{python}
@@ -614,7 +616,7 @@ def solver_ivp (Sk, Mk, p: Params, get_acceleration_f):
 \subsection{Implicit Euler}
 As stated, Runge-Kutta RK45 is a versatile method and thus is the default method for \texttt{solve\_ivp}. However, for stiff problems, rapid-changing dynamics, or situations where we need to use larger time steps, it's better to use implicit methods like Radau or BDF.
 
-Unlike the forward Euler method, where we use the slope at the current state to predict the next state, or Runge-Kutta methods, which use the slope at both states and average them, implicit methods use the slope at \(i+1\) to predict the value of that same state \(i+1\), as described in the following formula:
+Unlike the forward Euler method, where we use the slope at the current state to predict the next state, or Runge-Kutta methods, which use the slope at both states and average them, implicit methods use the slope at \(i+1\) to predict the value of that same state \(i+1\), as described in the following formula \cite{hornik_optimization}:
 \begin{equation}
     U_{k+1} = U_k + f(U_{k+1}, t_{k+1}) \cdot dt
 \end{equation}
@@ -622,7 +624,7 @@ Unlike the forward Euler method, where we use the slope at the current state to 
 This results in the variable we are trying to solve for appearing on both sides of the equation, which is why it is termed an "implicit method." To solve this equation, we can rearrange all terms to one side, setting the equation to zero and finding its roots. To that end, in this simulation, we apply the Newton-Raphson method.
 
 \textbf{\\Newton Method\\}
-The Newton-Raphson method aims to find the root of the non-linear equation \( R(v) = 0 \), where \( R(v) \) is the residual given by the difference between the left-hand side and the right-hand side of the following equation. In each iteration, we calculate the correction \( \Delta v \) and adjust \( v \) to approximate the solution, as stated in the following formula.
+The Newton-Raphson method aims to find the root of the non-linear equation \( R(v) = 0 \), where \( R(v) \) is the residual given by the difference between the left-hand side and the right-hand side of the following equation. In each iteration, we calculate the correction \( \Delta v \) and adjust \( v \) to approximate the solution, as stated in the following formula \cite{hornik_optimization}.
 
 \begin{equation}
 \frac{I}{\Delta t} - J(f(v,t^{(k+1)})) \Delta v = -\left(\frac{v - u^k}{\Delta t} - f(v, t^{(k+1)})\right)
@@ -705,7 +707,7 @@ Now, in complex systems, we might not have a precise equation to represent the m
 x = x_0 + v_0 t + \frac{1}{2} a t^2
 \end{equation}
 
-However, when gravity varies with altitude, and drag and lift forces change with air density (which also varies with altitude), we don't have a direct equation to represent the system. Instead, we use an approximation involving derivatives, as represented by the right side of the initial equation:
+However, when gravity varies with altitude, and drag and lift forces change with air density (which also varies with altitude), we don't have a direct equation to represent the system. Instead, we use an approximation involving derivatives, as represented by the right side of the initial equation \cite{newton_raphson_method}:
 
 \begin{equation}
 R(v) = \left( \frac{v - u^k}{\Delta t} - f(v, t^{k+1}) \right)
@@ -940,18 +942,25 @@ Thus, to achieve a balanced approach, velocities ranging between 7,000 and 14,00
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Conclusions}
+
 % Key findings and contributions
-We presented an application with different implementations for a simulation reentry, using both the proposed forward and backward methods. Our application also offers a wide range of options allowing users to customize the simulations to their desired goals. These options may range from enabling or disabling some of the forces applied during the reentry, to selecting different initial angles and velocities, disabling the parachute, or even simulating the reentry for a round earth. These options add complexity to the simulation, and specifically it's implementation, but in return enrich our application by offering a more customized experience for the user.
+We presented an application with various implementations for simulating reentry, utilizing both forward and backward methods. Our application also offers a wide range of options, allowing users to tailor the simulations to their specific goals. These options include enabling or disabling certain forces during reentry, selecting different initial angles and velocities, disabling the parachute, and simulating reentry for a round Earth. Although these options add complexity to the simulation and its implementation, they significantly enhance the application's value by providing a highly customizable and enriched user experience.
 
-During our experimental evaluation, we were able to achieve the goal of finding the intervals of values for the pair (initial angle, starting velocity) that lead to successful reentries. Furthermore these results were consistent for both the implicit and explicit versions, showing correctness among these solutions.
+By offering these features, our application serves as a powerful tool for exploring and understanding the dynamics of reentry trajectories. Whether for educational purposes, research, or practical applications, this flexibility allows users to simulate a variety of scenarios and gain deeper insights into the factors influencing successful reentry. This adaptability ensures that our application is not only a robust educational resource but also a versatile platform for ongoing exploration and innovation in the field of aerospace dynamics.
 
-Looking at some of the improvements that could've been done, we notice that during testing implicit methods show much higher runtime over the explicit methods. This was expected, and happens due to their correctness and stability. To mitigate these side-effects of the forward Euler method we could use techniques such as multiprocessing. This would allows to run more simulations simultaneously by taking advantage of a multi core processor.
 
 \subsubsection*{Limitations}
-edge cases to check... 
-solver\_ivp its hard to put and get out values from the system during the iterations, besides the given Y array representing the system ODEs. Example the model runs well but for better plots of acceleration we should calculate v in get acleeration 
 
- there should also be a short information on what were the main difficulties of the project, and what could eventually be
+Regarding simulations with a round earth model, further testing is required for edge cases, such as crossing the equator or reaching points 90 degrees away from it. The adjustments made in these scenarios need validation, as the model exhibits instability and occasionally produces overflow values in random tests.
+
+The solver\_ivp library presents challenges in accessing and modifying values within the system during iterations, limiting manipulations primarily to the Y array, which encapsulates the system of ordinary differential equations (ODEs). Although the model functions correctly overall, the retrieval of information like acceleration or accumulated earth angle is notably harder to achieve. 
+
+
+\subsubsection*{Future Works}
+
+Upon assessing potential enhancements, it is clear that implicit methods demonstrate considerably longer runtimes in comparison to explicit methods during testing. This result is expected due to their focus on accuracy and stability. To mitigate these challenges, techniques such as multiprocessing could be utilized. This strategy allows for the simultaneous execution of multiple simulations, taking advantage of the computational power of multi-core processors.
+
+
 
 
 
@@ -966,48 +975,44 @@ solver\_ivp its hard to put and get out values from the system during the iterat
 \bibitem{git}
 F. M. S. Silva, ``farosilva0/SMCEF-P2,'' GitHub, 2024. [Online]. Available: \url{https://github.com/farosilva0/SMCEF-P2}. Accessed: Jul. 09, 2024.
 
-\bibitem{air_dens_site}
+\bibitem{orlando_trajectory}
+J. Orlando et al., “TRAJECTORY AND ATTITUDE MODELING AND PROPAGATION FOR REENTRY DEBRIS WITH FRAGMENTATION IMPLEMENTING VOXELS MESHS.” Available: \url{http://mtc-m21c.sid.inpe.br/col/sid.inpe.br/mtc-m21c/2018/05.02.13.07/doc/publicacao.pdf}. Accessed: Jul. 02, 2024.
+
+\bibitem{gallais_mechanics}
+P. Gallais, Atmospheric Re-Entry Vehicle Mechanics. Berlin: Springer, 2007.
+
+ \bibitem{chapman_analysis}
+D. Chapman, “AN ANALYSIS OF THE CORRIDOR AND GUIDANCE REQUIREMENTS FOR SUPERCIRCULAR ENTRY INTO PLANETARY ATMOSPHERES.” Accessed: Jul. 02, 2024. [Online]. Available: \url{https://ntrs.nasa.gov/api/citations/20040030504/downloads/20040030504.pdf}.
+
+ \bibitem{orlando_voxels}
+J. Orlando et al., “TRAJECTORY AND ATTITUDE MODELING AND PROPAGATION FOR REENTRY DEBRIS WITH FRAGMENTATION IMPLEMENTING VOXELS MESHS.” Accessed: Jul. 02, 2024. [Online]. Available: \url{http://mtc-m21c.sid.inpe.br/col/sid.inpe.br/mtc-m21c/2018/05.02.13.07/doc/publicacao.pdf}.
+
+ \bibitem{miguel_optimal_reentry_control}
+A. Miguel and P. Moreira, “Optimal and Robust Control of Atmospheric Reentry Trajectories (Versão corrigida após defesa).” Available: \url{https://ubibliorum.ubi.pt/bitstream/10400.6/13015/1/8802\_19157.pdf}. Accessed: Jul. 02, 2024.
+
+
+ \bibitem{reentry_matters}
+“Re-Entry Matters: Investigation into Apollo Command Module Returns | AULIS Online – Different Thinking,” Aulis.com, 2014. \url{https://www.aulis.com/re-entrymatters.htm}. Accessed: Jul. 09, 2024.
+
+
+ \bibitem{air_dens_site}
 Editor Engineeringtoolbox, “U.S. Standard Atmosphere vs. Altitude,” Engineeringtoolbox.com, Jan. 26, 2003. \url{https://www.engineeringtoolbox.com/standard-atmosphere-d\_604.html}. Accessed: Jul. 09, 2024.
 ‌
 \bibitem{cubic_spline}
 S. McKinley and M. Levine, “Cubic Spline Interpolation.” Available: \url{https://www.rajgunesh.com/resources/downloads/numerical/cubicsplineinterpol.pdf}.
 
-\bibitem{reentry_matters}
-“Re-Entry Matters: Investigation into Apollo Command Module Returns | AULIS Online – Different Thinking,” Aulis.com, 2014. \url{https://www.aulis.com/re-entrymatters.htm}. Accessed: Jul. 09, 2024.
+‌
+ \bibitem{mazyku_optimum_reentry}
+A. Mazyku and H. Blunton, "Optimum Earth Re-entry Corridors." Accessed: Jul. 10, 2024. [Online]. Available: \url{https://ntrs.nasa.gov/api/citations/19660008888/downloads/19660008888.pdf}.
+‌
+ \bibitem{newton_raphson_method}
+“The Newton-Raphson Method.” Available: \url{https://personal.math.ubc.ca/~anstee/math104/newtonmethod.pdf}. Accessed: Jul. 10, 2024.
 
-\bibitem{returning_space}
-“Returning from Space: Re-entry.” Accessed: Jul. 02, 2024. [Online]. Available: \url{https://16streets.com/39-B/PDF%20files/Re-entry\_returning_from_space.pdf}.
-
-\bibitem{orlando_trajectory}
-J. Orlando et al., “TRAJECTORY AND ATTITUDE MODELING AND PROPAGATION FOR REENTRY DEBRIS WITH FRAGMENTATION IMPLEMENTING VOXELS MESHS.” Available: \url{http://mtc-m21c.sid.inpe.br/col/sid.inpe.br/mtc-m21c/2018/05.02.13.07/doc/publicacao.pdf}. Accessed: Jul. 02, 2024.
-
-\bibitem{github_metaphysics}
-“youtube\_channel/Python Metaphysics Series/vid22.ipynb at main · lukepolson/youtube\_channel,” GitHub, 2024. \url{https://github.com/lukepolson/youtube_channel/blob/main/Python%20Metaphysics%20Series/vid22.ipynb}. Accessed: Jul. 02, 2024.
-
-\bibitem{github_channel}
-“lukepolson/youtube\_channel: Notebooks for the python tutorials of my youtube channel. See specific youtube video for link to specifc notebook.,” GitHub, 2024. \url{https://github.com/lukepolson/youtube\_channel}. Accessed: Jul. 02, 2024.
-
-\bibitem{misc_rocket}
-Miscellaneous Bits, “Simulating Rocket Trajectories with Python,” YouTube. Apr. 21, 2023. Accessed: Jul. 02, 2024. [YouTube Video]. Available: \url{https://www.youtube.com/watch?v=22OCPbfY5SE}.
-
-\bibitem{miguel_optimal_reentry_control}
-A. Miguel and P. Moreira, “Optimal and Robust Control of Atmospheric Reentry Trajectories (Versão corrigida após defesa).” Available: \url{https://ubibliorum.ubi.pt/bitstream/10400.6/13015/1/8802\_19157.pdf}. Accessed: Jul. 02, 2024.
 
 \bibitem{github_reentry}
 “ferrolho/space-shuttle-reentry-trajectory: Space Shuttle Reentry Trajectory,” GitHub, 2024. \url{https://github.com/ferrolho/space-shuttle-reentry-trajectory}. Accessed: Jul. 02, 2024.
 
-\bibitem{gallais_mechanics}
-P. Gallais, Atmospheric Re-Entry Vehicle Mechanics. Berlin: Springer, 2007.
 
-\bibitem{chapman_analysis}
-D. Chapman, “AN ANALYSIS OF THE CORRIDOR AND GUIDANCE REQUIREMENTS FOR SUPERCIRCULAR ENTRY INTO PLANETARY ATMOSPHERES.” Accessed: Jul. 02, 2024. [Online]. Available: \url{https://ntrs.nasa.gov/api/citations/20040030504/downloads/20040030504.pdf}.
-
-\bibitem{orlando_voxels}
-J. Orlando et al., “TRAJECTORY AND ATTITUDE MODELING AND PROPAGATION FOR REENTRY DEBRIS WITH FRAGMENTATION IMPLEMENTING VOXELS MESHS.” Accessed: Jul. 02, 2024. [Online]. Available: \url{http://mtc-m21c.sid.inpe.br/col/sid.inpe.br/mtc-m21c/2018/05.02.13.07/doc/publicacao.pdf}.
-
-\bibitem{mazyku_optimum_reentry}
-A. Mazyku and H. Blunton, "Optimum Earth Re-entry Corridors." Accessed: Jul. 10, 2024. [Online]. Available: \url{https://ntrs.nasa.gov/api/citations/19660008888/downloads/19660008888.pdf}.
-‌
 \end{thebibliography}
 
 
