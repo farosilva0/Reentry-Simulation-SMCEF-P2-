@@ -83,10 +83,11 @@ def plot_all_reentrys(success, accel, vel, before, after, p: Params):
 ############################################################################################################
 # Plot Simulation Metrics -> Function divided in step so we can plot while the simulation is running, instead of having to store all values and just plot at the end
 
+MAX_ALTITUDE_TO_PLOT = ALTITUDE_0 + 70_000
+MAX_HORIZONTAL_DISTANCE_TO_PLOT = MAX_HORIZONTAL_DISTANCE + 500_000
+max_altitude = MAX_ALTITUDE_TO_PLOT
 show_parachute_label = False
 min_dist_label = max_dist_label = max_success_dist_label = None
-MAX_ALTITUDE_TO_PLOT = 200_000
-max_altitude = MAX_ALTITUDE_TO_PLOT
 
 def start_sims_metrics_plot(p: Params, total_sims_to_show): 
     fig, axs = plt.subplots(2, 3, figsize=(12, 10))
@@ -124,7 +125,7 @@ def plot_sim_metrics(axs, sim_metrics, angle_0, v_0, is_reentry_sim, p: Params):
     init_values_lable = f'ang {angle_0:.1f}, vel {v_0:.0f},   '
         
     # trim the vectors to show only more 500km after the max landing distance
-    idx_max = np.argmax(sim[PATH_X] > p.max_horizontal_distance + 500_000)
+    idx_max = np.argmax(sim[PATH_X] > MAX_HORIZONTAL_DISTANCE_TO_PLOT)
     if idx_max != 0:
         for key, vector in sim.items():
             sim[key] = vector[:idx_max]

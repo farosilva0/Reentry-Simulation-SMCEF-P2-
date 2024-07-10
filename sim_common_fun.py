@@ -5,7 +5,6 @@ from scipy.interpolate import CubicSpline
 import sim_plots as plot
 
 from sim_params import *
-from z_run_various_sims import *
 
 
 
@@ -68,8 +67,8 @@ def get_acceleration(Sk, Mk, p: Params):
     v, a, acc_angle, chute_open = Mk
        
     # variables commonly used in the calculations
-    y = 1e-20 if y == 0 else y
-    v = 1e-20 if v == 0 else v
+    y = 1e-10 if y == 0 else y
+    v = 1e-10 if v == 0 else v
     v_mass = v * p.capsule_mass 
     vx_v_mass = vx / v_mass
     vy_v_mass = vy / v_mass
@@ -131,11 +130,10 @@ def reentry_slope(Sk, Mk, p:Params):
 
 
 
-    
 def run_one_simulation(S0, M0, p: Params, method_f):
-    def print_final_state(S, M, str):
-        print(f"{str}:  x: {S[X]:.2f}    y: {(S[Y] - RADIUS_EARTH):.2f}    v: {M[V]:.2f}    a: {M[A]:.2f}   acc_angle: {M[EARTH_ANGLE]:.2f}")
-
+    def print_state(S, M, str, end="\r"):
+        print(f"{str}:   x:{S[X]:_.2f}    y:{(S[Y] - RADIUS_EARTH):_.2f}" + (f"    alt:{np.sqrt(S[X]**2 + S[Y]**2) - RADIUS_EARTH:_.2f}" if p.sim_round_earth else "") +      f"    v:{M[V]:_.2f}    a:{M[A]:_.2f}    acc_angle:{M[EARTH_ANGLE]:_.2f}    chute_open?:{M[CHUTE_OPEN] == True}", end=end)
+    
     size = int(p.sim_max_time / p.dt + 1)
     S = np.zeros((size, S0.shape[0]), dtype=float) # System variables: [x, y, vx, vy]
     M = np.zeros((size, M0.shape[0]), dtype=float) # Other metrics: [v, a, acc_angle, chute_open]
@@ -146,12 +144,14 @@ def run_one_simulation(S0, M0, p: Params, method_f):
 
     for i in range(1, size):
         S[i], M[i] = method_f(S[i-1], M[i-1], p, reentry_slope)
-        if i % 5_000 == 0:       
-            print("i: ", i, "  x:", round(S[i][X], 2), "  y:", round(S[i][Y], 2), "  v:", round(M[i][V], 2), "  a:", round(M[i][A], 2), "  acc_angle:", round(M[i][EARTH_ANGLE], 2), end="\r")
         if (np.sqrt(S[i][X]**2 + S[i][Y]**2) if p.sim_round_earth else S[i][Y]) < RADIUS_EARTH:
-            print_final_state(S[i], M[i], "Landed")
+            print_state(S[i], M[i], "Landed", end="\n")
             return S[:i+1], M[:i+1], t[:i+1]
-    print_final_state(S[size-1], M[size-1], "Time out")
+        if i % 5_000 == 0:       
+            print_state(S[i], M[i], "i: " + str(i))
+            if S[i][X] > plot.MAX_HORIZONTAL_DISTANCE_TO_PLOT:
+                break
+    print_state(S[size-1], M[size-1], "Time out", end="\n")
     return S, M, t
 
 

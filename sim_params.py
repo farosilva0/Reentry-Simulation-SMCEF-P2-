@@ -30,18 +30,18 @@ PROJECTILE_SIM = 7                      # we'll start simulation for several ang
 
 # Pairs to run in REENTRY_SIM_CUSTOMIZED_PAIRS
 INIT_ANGLES = [-1, -2, -4, -6, -8]    # initial angles (degrees)
-INIT_VELOCITIES = [2_000, 4_000, 6_000, 8_000, 10_000] #, 12_000, 16_000] # initial velocities (m/s)
+INIT_VELOCITIES = [2_000, 4_000, 6_000, 8_000, 10_000] # initial velocities (m/s)
 
 SIM_WITH_PARACHUTE = True          # if True we'll simulate the reentry with deployment of the parachutes after some conditions are met
 
-LIFT_PERPENDICULAR_TO_VELOCITY = True  # if False, all lift force will be added to y component regardless of velocity direction
+LIFT_PERPENDICULAR_TO_VELOCITY = False  # if False, all lift force will be added to y component regardless of velocity direction
                                         # if True, lift force will be perpendicular to velocity direction, and always pointing up
-MAX_ANGLE_OF_ATTACK = 10                     # angle of attack in degrees (0 means no angle of attack)
+MAX_ANGLE_OF_ATTACK = 0                     # angle of attack in degrees (0 means no angle of attack)
 
 ROUND_EARTH = True                  # if True we'll simulate the reentry in a round Earth
 
 
-DT = 0.01                        # time steps (s)
+DT = 0.0001                        # time steps (s)
 SIM_MAX_TIME = 60 * 30            # max time for the simulation (s)
 SIMS_TO_SHOW_IN_PLOT_METRICS = 12 # number of simulations to show in the plot metrics (we don't show all of them to not clutter the plot)
 
@@ -50,10 +50,11 @@ CAPSULE_LIFT_COEFFICIENT = 1        # lift coefficient to use in the simulation
 
 PARACHUTE_DRAG_COEFFICIENT = 1      # drag coefficient to use in the simulation
 
-NEWTON_EPSILON = 0.001   # for newton method (implicit) - to stop iterating when we find a "almost root" smaller than this value
+NEWTON_EPSILON = 0.0001   # for newton method (implicit) - to stop iterating when we find a "almost root" smaller than this value
 NEWTON_MAX_ITER = 100    # for newton method (implicit) - maximum number of iterations
 
-
+ALTITUDE_0 = 130_000      # initial altitude (m)
+MAX_HORIZONTAL_DISTANCE = 4_500_000  # maximum horizontal distance to land (m)
 
 
 ######################################################################
@@ -127,7 +128,7 @@ class Params:
 
         # Initial conditions
         self.x_0 = 0
-        self.altitude_0 = 130_000
+        self.altitude_0 = ALTITUDE_0
         self.init_angles = np.negative(np.arange(start=0, stop=15.1, step=0.5))  # Angles in degrees --> we negate them because the path angle is measured down from the horizon
         self.init_velocities = np.arange(start=0, stop=18_001, step=500)    # Possible Initial velocities (m/s)
 
@@ -145,7 +146,7 @@ class Params:
 
         # Parameter boundaries
         self.min_horizontal_distance = 2_500_000
-        self.max_horizontal_distance = 4_500_000
+        self.max_horizontal_distance = MAX_HORIZONTAL_DISTANCE
         self.max_landing_velocity = 25
         self.max_acceleration = 150
     
@@ -187,6 +188,8 @@ def orbital_velocity(altitude):
 
 def get_params():
     p = Params()
+    if ROUND_EARTH:
+        p.dt = 0.0001   # with explicit e.g. we need a smaller dt to avoid numerical instability
     if SIM_TO_RUN == REENTRY_SIM_NORMAL:
         return correct_exception_params(p)
     elif SIM_TO_RUN == REENTRY_SIM_CUSTOMIZED_PAIRS:
