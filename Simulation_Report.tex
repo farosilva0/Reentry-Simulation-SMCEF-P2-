@@ -87,8 +87,6 @@
 \institute{NOVA School of Science and Technology}
 % if multiple institutes, use \and to separate each one: \institute{Princeton University \and Springer Heidelberg} and in authors identify the institute of each author: ex AuthorA\inst{1,2} and AuthorB{2}
 
-\francisco{como meter data??}
-  % Add the date here
 
 \maketitle      % typeset the header of the contribution
 
@@ -943,9 +941,11 @@ Thus, to achieve a balanced approach, velocities ranging between 7,000 and 14,00
 
 \section{Conclusions}
 % Key findings and contributions
-We presented different implementations for a simulation reentry, using both forward and backward methods, as proposed. For these simulations we offer the user a variety of parameters that can be altered, allowing them to achieve the desired simulation.
+We presented an application with different implementations for a simulation reentry, using both the proposed forward and backward methods. Our application also offers a wide range of options allowing users to customize the simulations to their desired goals. These options may range from enabling or disabling some of the forces applied during the reentry, to selecting different initial angles and velocities, disabling the parachute, or even simulating the reentry for a round earth. These options add complexity to the simulation, and specifically it's implementation, but in return enrich our application by offering a more customized experience for the user.
 
-During our evaluations, we were able to find the interval of values for the initial angle and velocities that lead to successful re-entries.  We also note that these results were constant for both implicit and explicit implementations, showing the correctness of our implementations.
+During our experimental evaluation, we were able to achieve the goal of finding the intervals of values for the pair (initial angle, starting velocity) that lead to successful reentries. Furthermore these results were consistent for both the implicit and explicit versions, showing correctness among these solutions.
+
+Looking at some of the improvements that could've been done, we notice that during testing implicit methods show much higher runtime over the explicit methods. This was expected, and happens due to their correctness and stability. To mitigate these side-effects of the forward Euler method we could use techniques such as multiprocessing. This would allows to run more simulations simultaneously by taking advantage of a multi core processor.
 
 \subsubsection*{Limitations}
 edge cases to check... 
